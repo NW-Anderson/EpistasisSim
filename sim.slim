@@ -1,10 +1,12 @@
 function (void)SaveVals(void) {
-	for(pos in 0 :(nloci-1)) {
-		
+	mutations = sim.subpopulations.genomes.mutations;
+	freq = rep(0, nloci);
+	for(pos in 0:(nloci-1)) {
+		mutations = sim.subpopulations.genomes.position;
+		freq[pos] = sum(mutations.position == pos) / (popsize * npops
 	
 	
-	
-	
+	}
 	sim.setValue("RR", c(sim.getValue("RR"),mean(pmax(inds.sumOfMutationsOfType(m2), 0.0) /2)));
 	sim.setValue("diff", c(sim.getValue("diff"), mean(phenotype) - optimum));
 	sim.setValue("meanfit", c(sim.getValue("meanfit"), mean(sim.subpopulations.individuals.fitnessScaling)));
@@ -52,6 +54,7 @@ initialize() {
 	defineGlobal("npops",10);
 	defineGlobal("nloci", 1156);
 	defineGlobal("RR", 0.5);
+	defineGlobal("popsize", 500);
 	
 	initializeMutationRate(0);
 	
@@ -68,16 +71,16 @@ initialize() {
 
 // create a population of 500 individuals
 1 {
-	sim.addSubpop("p1", 500);
-	sim.addSubpop("p2", 500);
-	sim.addSubpop("p3", 500);
-	sim.addSubpop("p4", 500);
-	sim.addSubpop("p5", 500);
-	sim.addSubpop("p6", 500);
-	sim.addSubpop("p7", 500);
-	sim.addSubpop("p8", 500);
-	sim.addSubpop("p9", 500);
-	sim.addSubpop("p10", 500);
+	sim.addSubpop("p1", popsize);
+	sim.addSubpop("p2", popsize);
+	sim.addSubpop("p3", popsize);
+	sim.addSubpop("p4", popsize);
+	sim.addSubpop("p5", popsize);
+	sim.addSubpop("p6", popsize);
+	sim.addSubpop("p7", popsize);
+	sim.addSubpop("p8", popsize);
+	sim.addSubpop("p9", popsize);
+	sim.addSubpop("p10", popsize);
 
 	
 	ReadLog();
