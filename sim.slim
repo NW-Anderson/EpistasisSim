@@ -1,5 +1,5 @@
 function (void)InitializeFreqArray(void) {
-	results = array(rep(0, (3*npops)*(nloci + 2)),dim = c(3*npops, nloci + 2));
+	results = array(rep(0.0, (3*npops)*(nloci + 2)),dim = c(3*npops, nloci + 2));
 	gencol = c(rep(0, npops), rep(6, npops), rep(10, npops));
 	popcol = rep(1:npops, 3);
 	results[,0] = gencol;
@@ -9,13 +9,15 @@ function (void)InitializeFreqArray(void) {
 
 function (void)SaveVals(void) {
 	results = sim.getValue("results");
-	gen = sim.generation - 1;
+	gen = sim.generation - 2;
+	if(gen == 6) mult = 1;
+	if(gen == 10) mult = 2;
 	genomesperpop = length(sim.subpopulations[0].genomes);
 	
 	for(pop in 0:(npops-1)) {
 		mutations = sim.subpopulations[pop].genomes.mutations;
 		for(pos in 0:(nloci-1)) {
-			results[(gen * npops + pop),(pos + 2)] = sum(mutations.position == pos) / genomesperpop;
+			results[(mult * npops + pop),(pos + 2)] = sum(mutations.position == pos) / genomesperpop;
 		}
 	}
 	
@@ -72,7 +74,7 @@ initialize() {
 }
 
 // create a population of 500 individuals
-1 {
+1 late() {
 	sim.addSubpop("p1", popsize);
 	sim.addSubpop("p2", popsize);
 	sim.addSubpop("p3", popsize);
@@ -87,7 +89,16 @@ initialize() {
 	ReadLog();
 	SetUpStartingPops();
 	InitializeFreqArray();
+}
+
+2 early() {
 	SaveVals();
 }
 
+8 early() {
+	SaveVals();
+}
 
+12 early() {
+	SaveVals();
+}
