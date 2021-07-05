@@ -1,35 +1,37 @@
+function (void)InitializeFreqArray(void) {
+	results = array(rep(0, (3*npops)*(nloci + 2)),dim = c(3*npops, nloci + 2));
+	gencol = c(rep(0, npops), rep(6, npops), rep(10, npops));
+	popcol = rep(1:npops, 3);
+	results[,0] = gencol;
+	results[,1] = popcol;
+	sim.setValue("results", results);
+}
+
 function (void)SaveVals(void) {
-	mutations = sim.subpopulations.genomes.mutations;
-	freq = rep(0, nloci);
-	for(pos in 0:(nloci-1)) {
-		mutations = sim.subpopulations.genomes.position;
-		freq[pos] = sum(mutations.position == pos) / (popsize * npops
+	results = sim.getValue("results");
+	gen = sim.generation - 1;
+	genomesperpop = length(sim.subpopulations[0].genomes);
 	
-	
+	for(pop in 0:(npops-1)) {
+		mutations = sim.subpopulations[pop].genomes.mutations;
+		for(pos in 0:(nloci-1)) {
+			results[(gen * npops + pop),(pos + 2)] = sum(mutations.position == pos) / genomesperpop;
+		}
 	}
-	sim.setValue("RR", c(sim.getValue("RR"),mean(pmax(inds.sumOfMutationsOfType(m2), 0.0) /2)));
-	sim.setValue("diff", c(sim.getValue("diff"), mean(phenotype) - optimum));
-	sim.setValue("meanfit", c(sim.getValue("meanfit"), mean(sim.subpopulations.individuals.fitnessScaling)));
-	sim.setValue("phenovar", c(sim.getValue("phenovar"), var(phenotype)));
-	if(sim.generation == 1) sim.setValue("Ne", 0);
-	if(sim.generation > 1) sim.setValue("Ne", c(sim.getValue("Ne"), 4*popsize /
-	 (var(sim.subpopulations.lifetimeReproductiveOutput) + 2)));
+	
+	sim.setValue("results", results);
 }
 
 function (void)SetUpLog(void) {
 	log = sim.createLogFile("~/Documents/GitHub/EpistasisSim/sim_log_seed=" + getSeed(), logInterval = 1);
 	log.addGeneration();
 	log.addCustomColumn("RR", 'RR = sim.getValue("RR"); RR[length(RR) - 1];');
-	log.addCustomColumn("diff", 'diff = sim.getValue("diff"); diff[length(diff) - 1];');
-	log.addCustomColumn("meanfit", 'meanfit = sim.getValue("meanfit"); meanfit[length(meanfit) -1];');
-	log.addCustomColumn("phenovar", 'phenovar = sim.getValue("phenovar"); phenovar[length(phenovar)-1];');
-	log.addCustomColumn("Ne", 'ne = sim.getValue("Ne"); ne[length(ne)-1];');
 }
 
 function (void)SetUpStartingPops(void) {
 	startfreq = sim.getValue("startfreq");
 	selcoef = sim.getValue("selcoef");
-
+	
 	genomes = sim.subpopulations.genomes;
 	for(pos in 0:(nloci-1)){
 		genomes[which(rbinom(length(genomes),1,startfreq[pos])==1)].addNewMutation(m1,selcoef[pos],pos);
@@ -81,15 +83,11 @@ initialize() {
 	sim.addSubpop("p8", popsize);
 	sim.addSubpop("p9", popsize);
 	sim.addSubpop("p10", popsize);
-
 	
 	ReadLog();
-	SetUpLog();
 	SetUpStartingPops();
+	InitializeFreqArray();
+	SaveVals();
 }
 
 
-
-// output samples of 10 genomes periodically, all fixed mutations at end
-
-20000 late() { sim.outputFixedMutations(); }
