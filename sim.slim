@@ -1,3 +1,9 @@
+function (void)MakeOutput(void) {
+	results = sim.getValue("results");
+	catn("Gen", "Pop", "Loci" + 1:nloci);
+	catn(results);
+}
+
 function (void)InitializeFreqArray(void) {
 	results = array(rep(0.0, (3*npops)*(nloci + 2)),dim = c(3*npops, nloci + 2));
 	gencol = c(rep(0, npops), rep(6, npops), rep(10, npops));
