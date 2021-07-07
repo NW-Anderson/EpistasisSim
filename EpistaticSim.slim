@@ -1,7 +1,9 @@
 function (void)MakeOutput(void) {
 	results = sim.getValue("results");
-	catn("Gen", "Pop", "Loci" + 1:nloci);
-	catn(results);
+	catn(c("Gen,", "Pop,", "Loci" + 1:nloci + ","));
+	for(i in 1:nrow(results)) {
+		catn(paste(results, sep = ", "));	
+	}
 }
 
 function (void)InitializeFreqArray(void) {
@@ -31,17 +33,7 @@ function (void)SaveVals(void) {
 	sim.setValue("results", results);
 }
 
-function (void)SetUpLog(void) {
-	log = sim.createLogFile("~/Documents/GitHub/EpistasisSim/sim_log_seed=" + getSeed());
-	for(i in 0:(3*npops-1)) {
-		log.addCustomColumn("Gen", 'sim.getValue("results")[' + i + ',0];');
-		log.addCustomColumn("Pop", 'sim.getValue("results")[' + i + ',1];');
-		for(pos in 1:nloci) {
-			log.addCustomColumn("Loci " + pos, 'sim.getValue("results")[' + i + ',' + (pos+1) + '];');
-		}
-		log.logRow();
-	}
-}
+
 
 function (void)SetUpStartingPops(void) {
 	startfreq = sim.getValue("startfreq");
@@ -137,6 +129,5 @@ fitness(m1) {
 
 12 early() {
 	SaveVals();
-//	SetUpLog();
 	MakeOutput();
 }
