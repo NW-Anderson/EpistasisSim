@@ -6,6 +6,8 @@ function (void)MakeOutput(void) {
 	}
 }
 
+////////////////////////////
+
 function (void)InitializeFreqArray(void) {
 	results = array(rep(0.0, (3*npops)*(nloci + 2)),dim = c(3*npops, nloci + 2));
 	gencol = c(rep(0, npops), rep(6, npops), rep(10, npops));
@@ -14,6 +16,8 @@ function (void)InitializeFreqArray(void) {
 	results[,1] = popcol;
 	sim.setValue("results", results);
 }
+
+////////////////////////////
 
 function (void)SaveVals(void) {
 	results = sim.getValue("results");
@@ -34,6 +38,7 @@ function (void)SaveVals(void) {
 }
 
 
+////////////////////////////
 
 function (void)SetUpStartingPops(void) {
 	startfreq = sim.getValue("startfreq");
@@ -44,6 +49,9 @@ function (void)SetUpStartingPops(void) {
 		genomes[which(rbinom(length(genomes),1,startfreq[pos])==1)].addNewMutation(m1,selcoef[pos],pos);
 	}
 }
+
+
+////////////////////////////
 
 function (void)ReadLog(void) {
 	lines = readFile("~/Documents/GitHub/EpistasisSim/selected_snps.info.txt");
@@ -59,6 +67,9 @@ function (void)ReadLog(void) {
 	sim.setValue("startfreq", startfreq);
 }
 
+
+////////////////////////////
+
 function (void)GetFits(void) {
 	inds = sim.subpopulations.individuals;
 	polygenicscore = inds.sumOfMutationsOfType(m1);
@@ -67,10 +78,12 @@ function (void)GetFits(void) {
 		inds.fitnessScaling = fmin + ((fmax - fmin) / ((1 + s * exp(r *	(polygenicscore + b))) ^(1/s)));
 	}
 	
-	if(fitnessFunction == "diminishing returns"); {
+	if(fitnessFunction == "diminishing returns") {
 		inds.fitnessScaling = fmin + (fmax - fmin) * (1 - 1 / exp(a * (polygenicscore + b)));
 	}
 }
+
+////////////////////////////
 
 initialize() {
 	defineGlobal("npops",10);
@@ -79,7 +92,7 @@ initialize() {
 	defineGlobal("popsize", 500);
 	defineGlobal("fitnessFunction", "directional");
 	defineGlobal("fmin",0);
-	defineGlobal("fax",1);
+	defineGlobal("fmax",1);
 	defineGlobal("s",1.0);
 	defineGlobal("r",-0.05);
 	defineGlobal("a",0.2);
@@ -95,9 +108,15 @@ initialize() {
 	initializeRecombinationRate(RR);
 }
 
+
+
+
 fitness(m1) { 
 	return 1.0;
 }
+
+
+
 
 1 late() {
 	sim.addSubpop("p1", popsize);
@@ -115,9 +134,14 @@ fitness(m1) {
 	SetUpStartingPops();
 	InitializeFreqArray();
 }
+
+
+
 1: late() {
 	GetFits();
 }
+
+
 
 2 late() {
 	SaveVals();
