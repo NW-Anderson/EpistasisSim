@@ -22,7 +22,7 @@ function (void)InitializeFreqArray(void) {
 function (void)SaveVals(void) {
 	results = sim.getValue("results");
 	gen = sim.generation;
-	if(gen == 2) mult = 0;
+	if(gen == 1) mult = 0;
 	if(gen == 7) mult = 1;
 	if(gen == 11) mult = 2;
 	genomesperpop = length(sim.subpopulations[0].genomes);
@@ -86,17 +86,17 @@ function (void)GetFits(void) {
 ////////////////////////////
 
 initialize() {
-	defineGlobal("npops",10);
-	defineGlobal("nloci", 1156);
-	defineGlobal("RR", 0.5);
-	defineGlobal("popsize", 500);
-	defineGlobal("fitnessFunction", "directional");
-	defineGlobal("fmin",0);
-	defineGlobal("fmax",1);
-	defineGlobal("s",1.0);
-	defineGlobal("r",-0.05);
-	defineGlobal("a",0.2);
-	defineGlobal("b", -130);
+//	defineGlobal("npops",10);
+//	defineGlobal("nloci", 1156);
+//	defineGlobal("RR", 0.5);
+//	defineGlobal("popsize", 2000);
+//	defineGlobal("fitnessFunction", "directional");
+//	defineGlobal("fmin",0);
+//	defineGlobal("fmax",1);
+//	defineGlobal("s",1.0);
+//	defineGlobal("r",-0.05);
+//	defineGlobal("a",0.2);
+//	defineGlobal("b", -130);
 
 	initializeMutationRate(0);
 	
@@ -143,7 +143,7 @@ fitness(m1) {
 
 
 
-2 late() {
+1 late() {
 	SaveVals();
 }
 
