@@ -2,7 +2,7 @@ function (void)MakeOutput(void) {
 	results = sim.getValue("results");
 	catn(c("Gen,", "Pop,", "Loci" + 1:nloci + ","));
 	for(i in 1:nrow(results)) {
-		catn(paste(results, sep = ", "));	
+		catn(paste(results[i,], sep = ", "));	
 	}
 }
 
@@ -54,7 +54,7 @@ function (void)SetUpStartingPops(void) {
 ////////////////////////////
 
 function (void)ReadLog(void) {
-	lines = readFile("~/Documents/GitHub/EpistasisSim/selected_snps.info.txt");
+	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/EpistasisSim/selected_snps.info.txt");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	selcoef = c();
 	startfreq = c();

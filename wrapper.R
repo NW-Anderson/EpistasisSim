@@ -4,7 +4,7 @@ library(foreach)
 opts <- list(preschedule = FALSE)
 registerDoMC(5)
 
-setwd("~/Documents/GitHub/EpistasisSim")
+setwd("/media/lee/HDD_Array/nwanderson/EpistasisSim/EpistasisSim/")
 npops = 10
 nloci = 1156
 RR = 0.5
