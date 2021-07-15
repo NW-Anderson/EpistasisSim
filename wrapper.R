@@ -2,6 +2,9 @@ library(doMC)
 library(stringr)
 library(foreach)
 library(EasyABC)
+# setwd(("/media/lee/HDD_Array/nwanderson/EpistasisSim"))
+setwd("~/Documents/GitHub/EpistasisSim")
+
 # opts <- list(preschedule = FALSE)
 # registerDoMC(5)
 #################
@@ -37,7 +40,7 @@ model <- function(par){
   a <- par[10]
   b <- par[11]
   
-  system(paste("slim -d seed=", seed,
+  tryCatch( { system(paste("slim -d seed=", seed,
                " -d npops=", npops,
                " -d nloci=", nloci,
                " -d RR=",RR,
@@ -54,9 +57,15 @@ model <- function(par){
                "_s=", s,
                "_r=", r,
                "_a=", a,
-               "_b=", b, ".csv", sep = ""))
+               "_b=", b, ".csv", sep = "")) },
+            error = function(e) {return(rep(0, 10))} )
   
-  rawout <- as.matrix(read.csv(file = paste('./output/', list.files(path = './output')[1], sep = '')))[,-1159]
+  rawout <- as.matrix(read.csv(file = paste('./output/directional',
+               "_seed=", seed,
+               "_s=", s,
+               "_r=", r,
+               "_a=", a,
+               "_b=", b, ".csv", sep = "")))[,-1159]
   results <- vector(length = 10)
   for(i in 0:1){
     signsnps <- vector("list",10)
@@ -78,7 +87,12 @@ model <- function(par){
     jaccmat <- na.omit(as.vector(jaccmat))
     results[(5 * i + 1):(5 *  i + 5)] <- quantile(jaccmat)
   }
-  system(paste("rm ./output/", list.files(path = './output')[1], sep = ''))
+  system(paste("rm ./output/directional",
+               "_seed=", seed,
+               "_s=", s,
+               "_r=", r,
+               "_a=", a,
+               "_b=", b, ".csv", sep = ''))
   return(results)
 }
 ###########
@@ -95,7 +109,7 @@ prior <- list(c("unif",10,10), # npops
               c("unif",0,1), # s
               c("unif",-5,0), # r
               c("unif",1,1), # a
-              c("unif",120,150)) # b
+              c("unif",-150,-120)) # b
 
 ##############
 ## Observed ##
@@ -109,11 +123,9 @@ rm(rawout, i)
 ##################
 ## Call easyABC ##
 ##################
-# setwd("~/Documents/GitHub/EpistasisSim")
-setwd(("/media/lee/HDD_Array/nwanderson/EpistasisSim"))
 ABC_SLiM <- ABC_sequential(method="Lenormand", use_seed=TRUE,
                            model=model, prior=prior, summary_stat_target=observed,
-                           nb_simul=5, n_cluster = 8) 
+                           nb_simul=2, n_cluster = 8) 
 
 save(ABC_SLiM, file = "ABCoutput.RData")
 
