@@ -54,8 +54,8 @@ function (void)SetUpStartingPops(void) {
 ////////////////////////////
 
 function (void)ReadLog(void) {
-//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/EpistasisSim/selected_snps.info.txt");
-	lines = readFile("~/Documents/GitHub/EpistasisSim/selected_snps.info.txt");
+	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/EpistasisSim/selected_snps.info.txt");
+//	lines = readFile("~/Documents/GitHub/EpistasisSim/selected_snps.info.txt");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	selcoef = c();
 	startfreq = c();
@@ -87,18 +87,18 @@ function (void)GetFits(void) {
 ////////////////////////////
 
 initialize() {
-//	setSeed(seed);
-	defineGlobal("npops",10);
-	defineGlobal("nloci", 1156);
-	defineGlobal("RR", 0.5);
-	defineGlobal("popsize", 2000);
-	defineGlobal("fitnessFunction", "directional");
-	defineGlobal("fmin",0);
-	defineGlobal("fmax",1);
-	defineGlobal("s",1.0);
-	defineGlobal("r",-0.05);
-	defineGlobal("a",0.2);
-	defineGlobal("b", -130);
+	setSeed(seed);
+//	defineGlobal("npops",10);
+//	defineGlobal("nloci", 1156);
+//	defineGlobal("RR", 0.5);
+//	defineGlobal("popsize", 2000);
+//	defineGlobal("fitnessFunction", "directional");
+//	defineGlobal("fmin",0);
+//	defineGlobal("fmax",1);
+//	defineGlobal("s",1.0);
+//	defineGlobal("r",-0.05);
+//	defineGlobal("a",0.2);
+//	defineGlobal("b", -130);
 
 	initializeMutationRate(0);
 	
