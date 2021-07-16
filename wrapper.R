@@ -2,8 +2,8 @@ library(doMC)
 library(stringr)
 library(foreach)
 library(EasyABC)
-# setwd(("/media/lee/HDD_Array/nwanderson/EpistasisSim"))
-setwd("~/Documents/GitHub/EpistasisSim")
+setwd(("/media/lee/HDD_Array/nwanderson/EpistasisSim"))
+# setwd("~/Documents/GitHub/EpistasisSim")
 
 # opts <- list(preschedule = FALSE)
 # registerDoMC(5)
@@ -22,8 +22,10 @@ setwd("~/Documents/GitHub/EpistasisSim")
 # s = 1
 # r = -0.05
 # a = 0.2
-# b = -130
+# b = -13000
 # par <- c(seed, npops, nloci, RR, popsize, fmin, fmax, s, r, a, b)
+# rm(list=ls()[-7])
+
 ####################
 ## model function ##
 ####################
@@ -40,33 +42,48 @@ model <- function(par){
   a <- par[10]
   b <- par[11]
   
-  tryCatch( { system(paste("slim -d seed=", seed,
-               " -d npops=", npops,
-               " -d nloci=", nloci,
-               " -d RR=",RR,
-               " -d popsize=", popsize,
-               " -d " ,'"', 'fitnessFunction=', "'", 'directional', "'", '"',
-               " -d fmin=", fmin,
-               " -d fmax=", fmax,
-               " -d s=", s,
-               " -d r=", r,
-               " -d a=", a,
-               " -d b=", b,
-               " EpistaticSim.slim | tail -n +14 > output/directional",
-               "_seed=", seed,
-               "_s=", s,
-               "_r=", r,
-               "_a=", a,
-               "_b=", b, ".csv", sep = "")) },
-            error = function(e) {return(rep(0, 10))} )
+  # seed <- par[1]
+  # s <- par[2]
+  # r <- par[3]
+  # b <- par[4]
+  # 
+  # npops <- 10 
+  # nloci <- 1156
+  # RR <- 0.5
+  # popsize <- 100
+  # fmin <- 0
+  # fmax <- 1
+  # a <- 1
   
-  rawout <- as.matrix(read.csv(file = paste('./output/directional',
-               "_seed=", seed,
-               "_s=", s,
-               "_r=", r,
-               "_a=", a,
-               "_b=", b, ".csv", sep = "")))[,-1159]
-  results <- vector(length = 10)
+  tryCatch( {
+    system(paste("slim -d seed=", seed,
+                           " -d npops=", npops,
+                           " -d nloci=", nloci,
+                           " -d RR=",RR,
+                           " -d popsize=", popsize,
+                           " -d " ,'"', 'fitnessFunction=', "'", 'directional', "'", '"',
+                           " -d fmin=", fmin,
+                           " -d fmax=", fmax,
+                           " -d s=", s,
+                           " -d r=", r,
+                           " -d a=", a,
+                           " -d b=", b,
+                           " EpistaticSim.slim | tail -n +14 > output/directional",
+                           "_seed=", seed,
+                           "_s=", s,
+                           "_r=", r,
+                           "_a=", a,
+                           "_b=", b, ".csv", sep = ""))
+    rawout <- as.matrix(read.csv(file = paste('./output/directional',
+                                              "_seed=", seed,
+                                              "_s=", s,
+                                              "_r=", r,
+                                              "_a=", a,
+                                              "_b=", b, ".csv", sep = "")))[,-1159]
+    },error = function(e) {return(c(rep(0, 2)))} )
+  
+  
+  results <- vector(length = 2)
   for(i in 0:1){
     signsnps <- vector("list",10)
     names(signsnps) <- paste('pop', 1:10)
@@ -85,7 +102,8 @@ model <- function(par){
       }
     }
     jaccmat <- na.omit(as.vector(jaccmat))
-    results[(5 * i + 1):(5 *  i + 5)] <- quantile(jaccmat)
+    # results[(5 * i + 1):(5 *  i + 5)] <- quantile(jaccmat)
+    results[i + 1] <- c(mean(jaccmat))
   }
   system(paste("rm ./output/directional",
                "_seed=", seed,
@@ -100,7 +118,7 @@ model <- function(par){
 ###########
 #par <- c(seed, npops, nloci, RR, popsize, fmin, fmax, s, r, a, b)
 
-prior <- list(c("unif",10,10), # npops 
+prior <- list(c("unif",10,10), # npops
               c("unif",1156,1156), # nloci
               c("unif",0.5,0.5), # RR
               c("unif",2000,2000), # popsize
@@ -111,21 +129,27 @@ prior <- list(c("unif",10,10), # npops
               c("unif",1,1), # a
               c("unif",-150,-120)) # b
 
+# prior <- list(c("unif",0,1), # s
+#               c("unif",-5,0), # r
+#               c("unif",-150,-120)) # b)
+
 ##############
 ## Observed ##
 ##############
 rawout <- readRDS("jaccard.empirical.AFC_01.RDS")
-observed <- vector(length = 10)
-for(i in 0:1){
-  observed[(5 * i + 1):(5 * i + 5)] <- quantile(rawout[[i+1]])
-}
-rm(rawout, i)
+observed <- vector(length = 2)
+# for(i in 0:1){
+#   observed[(5 * i + 1):(5 * i + 5)] <- quantile(rawout[[i+1]])
+# }
+observed[1] <- mean(rawout[[1]])
+observed[2] <- mean(rawout[[2]])
+rm(rawout) # , i)
 ##################
 ## Call easyABC ##
 ##################
-ABC_SLiM <- ABC_sequential(method="Lenormand", use_seed=TRUE,
+ABC_SLiM <- ABC_sequential(method="Lenormand", use_seed=T,
                            model=model, prior=prior, summary_stat_target=observed,
-                           nb_simul=2, n_cluster = 8) 
+                           nb_simul=4, n_cluster = 5) 
 
 save(ABC_SLiM, file = "ABCoutput.RData")
 

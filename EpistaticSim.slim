@@ -54,8 +54,8 @@ function (void)SetUpStartingPops(void) {
 ////////////////////////////
 
 function (void)ReadLog(void) {
-//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/selected_snps.info.txt");
-	lines = readFile("~/Documents/GitHub/EpistasisSim/selected_snps.info.txt");
+	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/selected_snps.info.txt");
+//	lines = readFile("~/Documents/GitHub/EpistasisSim/selected_snps.info.txt");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	selcoef = c();
 	startfreq = c();
