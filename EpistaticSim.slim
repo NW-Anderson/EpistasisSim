@@ -79,8 +79,8 @@ function (void)GetFits(void) {
 		inds.fitnessScaling = fmin + ((fmax - fmin) / ((1 + s * exp(r *	(polygenicscore + b))) ^(1/s)));
 	}
 	
-	if(fitnessFunction == "diminishing returns") {
-		inds.fitnessScaling = fmin + (fmax - fmin) * (1 - 1 / exp(a * (polygenicscore + b)));
+	if(fitnessFunction == "diminishingReturns") {
+		inds.fitnessScaling = max(c(0,fmin + (fmax - fmin) * (1 - 1 / exp(a * (polygenicscore + b)))));
 	}
 }
 
