@@ -40,7 +40,7 @@ model <- function(par){
   s <- par[8]
   r <- par[9]
   a <- par[10]
-  b <- par[11]
+  b <- par[11] * 100
   
   # seed <- par[1]
   # s <- par[2]
@@ -57,61 +57,59 @@ model <- function(par){
   
   tryCatch( {
     system(paste("slim -d seed=", seed,
-                           " -d npops=", npops,
-                           " -d nloci=", nloci,
-                           " -d RR=",RR,
-                           " -d popsize=", popsize,
-                           " -d " ,'"', 'fitnessFunction=', "'", 'directional', "'", '"',
-                           " -d fmin=", fmin,
-                           " -d fmax=", fmax,
-                           " -d s=", s,
-                           " -d r=", r,
-                           " -d a=", a,
-                           " -d b=", b,
-                           " EpistaticSim.slim | tail -n +14 > output/directional",
-                           "_seed=", seed,
-                           "_s=", s,
-                           "_r=", r,
-                           "_a=", a,
-                           "_b=", b, ".csv", sep = ""))
+                 " -d npops=", npops,
+                 " -d nloci=", nloci,
+                 " -d RR=",RR,
+                 " -d popsize=", popsize,
+                 " -d " ,'"', 'fitnessFunction=', "'", 'directional', "'", '"',
+                 " -d fmin=", fmin,
+                 " -d fmax=", fmax,
+                 " -d s=", s,
+                 " -d r=", r,
+                 " -d a=", a,
+                 " -d b=", b,
+                 " EpistaticSim.slim | tail -n +14 > output/directional",
+                 "_seed=", seed,
+                 "_s=", s,
+                 "_r=", r,
+                 "_a=", a,
+                 "_b=", b, ".csv", sep = ""))
     rawout <- as.matrix(read.csv(file = paste('./output/directional',
                                               "_seed=", seed,
                                               "_s=", s,
                                               "_r=", r,
                                               "_a=", a,
                                               "_b=", b, ".csv", sep = "")))[,-1159]
-    },error = function(e) {return(c(rep(0, 2)))} )
-  
-  
-  results <- vector(length = 2)
-  for(i in 0:1){
-    signsnps <- vector("list",10)
-    names(signsnps) <- paste('pop', 1:10)
-    for(pop in 1:10){
-      popdat <- rawout[which(rawout[,2] == pop),]
-      if(i == 0){
-        signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
-      }else if(i == 1){
-        signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
+    results <- vector(length = 2)
+    for(i in 0:1){
+      signsnps <- vector("list",10)
+      names(signsnps) <- paste('pop', 1:10)
+      for(pop in 1:10){
+        popdat <- rawout[which(rawout[,2] == pop),]
+        if(i == 0){
+          signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
+        }else if(i == 1){
+          signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
+        }
       }
-    }
-    jaccmat <- array(dim = c(10,10))
-    for(j in 1:9){
-      for(k in (j+1):10){
-        jaccmat[j,k] <- length(intersect(signsnps[[j]], signsnps[[k]])) / length(union(signsnps[[j]], signsnps[[k]]))
+      jaccmat <- array(dim = c(10,10))
+      for(j in 1:9){
+        for(k in (j+1):10){
+          jaccmat[j,k] <- length(intersect(signsnps[[j]], signsnps[[k]])) / length(union(signsnps[[j]], signsnps[[k]]))
+        }
       }
+      jaccmat <- na.omit(as.vector(jaccmat))
+      # results[(5 * i + 1):(5 *  i + 5)] <- quantile(jaccmat)
+      results[i + 1] <- c(mean(jaccmat))
     }
-    jaccmat <- na.omit(as.vector(jaccmat))
-    # results[(5 * i + 1):(5 *  i + 5)] <- quantile(jaccmat)
-    results[i + 1] <- c(mean(jaccmat))
-  }
-  system(paste("rm ./output/directional",
-               "_seed=", seed,
-               "_s=", s,
-               "_r=", r,
-               "_a=", a,
-               "_b=", b, ".csv", sep = ''))
-  return(results)
+    system(paste("rm ./output/directional",
+                 "_seed=", seed,
+                 "_s=", s,
+                 "_r=", r,
+                 "_a=", a,
+                 "_b=", b, ".csv", sep = ''))
+    return(results)
+  },error = function(e) {return(c(rep(0, 2)))} )
 }
 ###########
 ## prior ##
@@ -127,7 +125,7 @@ prior <- list(c("unif",10,10), # npops
               c("unif",0,1), # s
               c("unif",-5,0), # r
               c("unif",1,1), # a
-              c("unif",-150,-120)) # b
+              c("unif",-1.50,-1.20)) # b
 
 # prior <- list(c("unif",0,1), # s
 #               c("unif",-5,0), # r
@@ -149,7 +147,7 @@ rm(rawout) # , i)
 ##################
 ABC_SLiM <- ABC_sequential(method="Lenormand", use_seed=T,
                            model=model, prior=prior, summary_stat_target=observed,
-                           nb_simul=4, n_cluster = 5) 
+                           nb_simul=1000, n_cluster = 6) 
 
 save(ABC_SLiM, file = "ABCoutput.RData")
 
