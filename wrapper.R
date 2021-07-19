@@ -22,7 +22,7 @@ setwd(("/media/lee/HDD_Array/nwanderson/EpistasisSim"))
 # s = 1
 # r = -0.05
 # a = 0.2
-# b = -13000
+# b = -1.3
 # par <- c(seed, npops, nloci, RR, popsize, fmin, fmax, s, r, a, b)
 # rm(list=ls()[-7])
 
@@ -87,7 +87,7 @@ model <- function(par){
       for(pop in 1:10){
         popdat <- rawout[which(rawout[,2] == pop),]
         if(i == 0){
-          signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
+          signsnps[[pop]] <- which((popdat[2,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
         }else if(i == 1){
           signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
         }
@@ -147,7 +147,7 @@ rm(rawout) # , i)
 ##################
 ABC_SLiM <- ABC_sequential(method="Lenormand", use_seed=T,
                            model=model, prior=prior, summary_stat_target=observed,
-                           nb_simul=1000, n_cluster = 6) 
+                           nb_simul=5, n_cluster = 1) 
 
 save(ABC_SLiM, file = "ABCoutput.RData")
 

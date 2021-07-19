@@ -87,7 +87,7 @@ model <- function(par){
       for(pop in 1:10){
         popdat <- rawout[which(rawout[,2] == pop),]
         if(i == 0){
-          signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
+          signsnps[[pop]] <- which((popdat[2,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
         }else if(i == 1){
           signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
         }
