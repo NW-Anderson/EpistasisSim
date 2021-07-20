@@ -2,8 +2,8 @@ library(doMC)
 library(stringr)
 library(foreach)
 library(EasyABC)
-# setwd(("/media/lee/HDD_Array/nwanderson/EpistasisSim"))
-setwd("~/Documents/GitHub/EpistasisSim")
+setwd(("/media/lee/HDD_Array/nwanderson/EpistasisSim"))
+# setwd("~/Documents/GitHub/EpistasisSim")
 
 # opts <- list(preschedule = FALSE)
 # registerDoMC(5)
@@ -68,13 +68,13 @@ model <- function(par){
                  " -d r=", r,
                  " -d a=", a,
                  " -d b=", b,
-                 " EpistaticSim.slim | tail -n +14 > output/directional",
+                 " EpistaticSim.slim | tail -n +14 > output/diminishingreturns",
                  "_seed=", seed,
                  "_s=", s,
                  "_r=", r,
                  "_a=", a,
                  "_b=", b, ".csv", sep = ""))
-    rawout <- as.matrix(read.csv(file = paste('./output/directional',
+    rawout <- as.matrix(read.csv(file = paste('./output/diminishingreturns',
                                               "_seed=", seed,
                                               "_s=", s,
                                               "_r=", r,
@@ -102,7 +102,7 @@ model <- function(par){
       # results[(5 * i + 1):(5 *  i + 5)] <- quantile(jaccmat)
       results[i + 1] <- c(mean(jaccmat))
     }
-    system(paste("rm ./output/directional",
+    system(paste("rm ./output/diminishingreturns",
                  "_seed=", seed,
                  "_s=", s,
                  "_r=", r,
@@ -124,8 +124,8 @@ prior <- list(c("unif",10,10), # npops
               c("unif",1,1), # fmax
               c("unif",1,1), # s
               c("unif",0,0), # r
-              c("unif",0,5), # a
-              c("unif",-1.60,-1.20)) # b
+              c("unif",1e-5,10), # a
+              c("unif",-1.40,-1.30)) # b
 
 # prior <- list(c("unif",0,1), # s
 #               c("unif",-5,0), # r
@@ -149,6 +149,6 @@ ABC_SLiM <- ABC_sequential(method="Lenormand", use_seed=T,
                            model=model, prior=prior, summary_stat_target=observed,
                            nb_simul=5, n_cluster = 1) 
 
-save(ABC_SLiM, file = "ABCoutput.RData")
+save(ABC_SLiM, file = "ABCDRoutput.RData")
 
 

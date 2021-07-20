@@ -1,8 +1,12 @@
 function (void)MakeOutput(void) {
 	results = sim.getValue("results");
-	catn("Gen", "Pop", "Loci" + 1:nloci);
-	catn(results);
+	catn(c("Gen,", "Pop,", "Loci" + 1:nloci + ","));
+	for(i in 0:(nrow(results)-1)) {
+		catn(paste(results[i,], sep = ", "));	
+	}
 }
+
+////////////////////////////
 
 function (void)InitializeFreqArray(void) {
 	results = array(rep(0.0, (3*npops)*(nloci + 2)),dim = c(3*npops, nloci + 2));
@@ -13,12 +17,14 @@ function (void)InitializeFreqArray(void) {
 	sim.setValue("results", results);
 }
 
+////////////////////////////
+
 function (void)SaveVals(void) {
 	results = sim.getValue("results");
-	gen = sim.generation - 2;
-	if(gen == 0) mult = 0;
-	if(gen == 6) mult = 1;
-	if(gen == 10) mult = 2;
+	gen = sim.generation;
+	if(gen == 1) mult = 0;
+	if(gen == 7) mult = 1;
+	if(gen == 11) mult = 2;
 	genomesperpop = length(sim.subpopulations[0].genomes);
 	
 	for(pop in 0:(npops-1)) {
@@ -31,17 +37,8 @@ function (void)SaveVals(void) {
 	sim.setValue("results", results);
 }
 
-function (void)SetUpLog(void) {
-	log = sim.createLogFile("~/Documents/GitHub/EpistasisSim/sim_log_seed=" + getSeed());
-	for(i in 0:(3*npops-1)) {
-		log.addCustomColumn("Gen", 'sim.getValue("results")[' + i + ',0];');
-		log.addCustomColumn("Pop", 'sim.getValue("results")[' + i + ',1];');
-		for(pos in 1:nloci) {
-			log.addCustomColumn("Loci " + pos, 'sim.getValue("results")[' + i + ',' + (pos+1) + '];');
-		}
-		log.logRow();
-	}
-}
+
+////////////////////////////
 
 function (void)SetUpStartingPops(void) {
 	startfreq = sim.getValue("startfreq");
@@ -53,7 +50,11 @@ function (void)SetUpStartingPops(void) {
 	}
 }
 
+
+////////////////////////////
+
 function (void)ReadLog(void) {
+//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/selected_snps.info.txt");
 	lines = readFile("~/Documents/GitHub/EpistasisSim/selected_snps.info.txt");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	selcoef = c();
@@ -66,27 +67,63 @@ function (void)ReadLog(void) {
 	sim.setValue("selcoef", selcoef);
 	sim.setValue("startfreq", startfreq);
 }
-// set up a simple neutral simulation
+
+
+////////////////////////////
+
+//function (void)GetFits(void) {
+//	inds = sim.subpopulations.individuals;
+//	polygenicscore = inds.sumOfMutationsOfType(m1);
+//	
+//	if(fitnessFunction == "directional") {
+//		inds.fitnessScaling = fmin + ((fmax - fmin) / ((1 + s * exp(r *	(polygenicscore + b))) ^(1/s)));
+//	}
+//	
+//	if(fitnessFunction == "diminishingReturns") {
+//		inds.fitnessScaling = max(c(0,fmin + (fmax - fmin) * (1 - 1 / exp(a * (polygenicscore + b)))));
+//	}
+//	
+//	if(fitnessFunction == "exponential") {
+//		inds.fitnessScaling = exp(a * (polygenicscore + b));
+//	}
+//}
+
+////////////////////////////
+
 initialize() {
-	defineGlobal("npops",10);
-	defineGlobal("nloci", 1156);
-	defineGlobal("RR", 0.5);
-	defineGlobal("popsize", 500);
-	
+	setSeed(seed);
+//	defineGlobal("npops",10);
+//	defineGlobal("nloci", 1156);
+//	defineGlobal("RR", 0.5);
+//	defineGlobal("popsize", 2000);
+//	defineGlobal("fitnessFunction", "directional");
+//	defineGlobal("fmin",0);
+//	defineGlobal("fmax",1);
+//	defineGlobal("s",1.0);
+//	defineGlobal("r",-0.05);
+//	defineGlobal("a",0.2);
+//	defineGlobal("b", -130);
+
 	initializeMutationRate(0);
 	
-	// m1 mutation type: neutral
 	initializeMutationType("m1", 0.5, "f", 0.0);
 	
-	// g1 genomic element type: uses m1 for all mutations
 	initializeGenomicElementType("g1", m1, 1.0);
 	
-	// uniform chromosome of length 100 kb with uniform recombination
 	initializeGenomicElement(g1, 0, (nloci - 1));
 	initializeRecombinationRate(RR);
 }
 
-// create a population of 500 individuals
+
+
+
+//fitness(m1) { 
+//	return 1.0;
+//}
+
+
+
+
 1 late() {
 	sim.addSubpop("p1", popsize);
 	sim.addSubpop("p2", popsize);
@@ -104,16 +141,23 @@ initialize() {
 	InitializeFreqArray();
 }
 
-2 early() {
+
+
+//1: late() {
+//	GetFits();
+//}
+
+
+
+1 late() {
 	SaveVals();
 }
 
-8 early() {
+7 late() {
 	SaveVals();
 }
 
-12 early() {
+11 late() {
 	SaveVals();
-//	SetUpLog();
 	MakeOutput();
 }

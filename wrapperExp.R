@@ -2,8 +2,8 @@ library(doMC)
 library(stringr)
 library(foreach)
 library(EasyABC)
-setwd(("/media/lee/HDD_Array/nwanderson/EpistasisSim"))
-# setwd("~/Documents/GitHub/EpistasisSim")
+# setwd(("/media/lee/HDD_Array/nwanderson/EpistasisSim"))
+setwd("~/Documents/GitHub/EpistasisSim")
 
 # opts <- list(preschedule = FALSE)
 # registerDoMC(5)
@@ -22,7 +22,7 @@ setwd(("/media/lee/HDD_Array/nwanderson/EpistasisSim"))
 # s = 1
 # r = -0.05
 # a = 0.2
-# b = -1.3
+# b = -13000
 # par <- c(seed, npops, nloci, RR, popsize, fmin, fmax, s, r, a, b)
 # rm(list=ls()[-7])
 
@@ -61,20 +61,20 @@ model <- function(par){
                  " -d nloci=", nloci,
                  " -d RR=",RR,
                  " -d popsize=", popsize,
-                 " -d " ,'"', 'fitnessFunction=', "'", 'directional', "'", '"',
+                 " -d " ,'"', 'fitnessFunction=', "'", 'exponential', "'", '"',
                  " -d fmin=", fmin,
                  " -d fmax=", fmax,
                  " -d s=", s,
                  " -d r=", r,
                  " -d a=", a,
                  " -d b=", b,
-                 " EpistaticSim.slim | tail -n +14 > output/directional",
+                 " EpistaticSim.slim | tail -n +14 > output/exponential",
                  "_seed=", seed,
                  "_s=", s,
                  "_r=", r,
                  "_a=", a,
                  "_b=", b, ".csv", sep = ""))
-    rawout <- as.matrix(read.csv(file = paste('./output/directional',
+    rawout <- as.matrix(read.csv(file = paste('./output/exponential',
                                               "_seed=", seed,
                                               "_s=", s,
                                               "_r=", r,
@@ -102,7 +102,7 @@ model <- function(par){
       # results[(5 * i + 1):(5 *  i + 5)] <- quantile(jaccmat)
       results[i + 1] <- c(mean(jaccmat))
     }
-    system(paste("rm ./output/directional",
+    system(paste("rm ./output/exponential",
                  "_seed=", seed,
                  "_s=", s,
                  "_r=", r,
@@ -122,10 +122,10 @@ prior <- list(c("unif",10,10), # npops
               c("unif",2000,2000), # popsize
               c("unif",0,0), # fmin
               c("unif",1,1), # fmax
-              c("unif",0,1), # s
-              c("unif",-5,0), # r
-              c("unif",1,1), # a
-              c("unif",-1.50,-1.20)) # b
+              c("unif",1,1), # s
+              c("unif",0,0), # r
+              c("unif",1e-5,10), # a
+              c("unif",-1.40,-1.30)) # b
 
 # prior <- list(c("unif",0,1), # s
 #               c("unif",-5,0), # r
@@ -145,10 +145,10 @@ rm(rawout) # , i)
 ##################
 ## Call easyABC ##
 ##################
-Directional <- ABC_sequential(method="Lenormand", use_seed=T,
+ABC_SLiM <- ABC_sequential(method="Lenormand", use_seed=T,
                            model=model, prior=prior, summary_stat_target=observed,
                            nb_simul=5, n_cluster = 1) 
 
-save(Directional, file = "ABCDirectionaloutput.RData")
+save(ABC_SLiM, file = "ABCexpoutput.RData")
 
 
