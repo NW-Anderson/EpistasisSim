@@ -2,8 +2,8 @@ library(doMC)
 library(stringr)
 library(foreach)
 library(EasyABC)
-setwd(("/media/lee/HDD_Array/nwanderson/EpistasisSim"))
-# setwd("~/Documents/GitHub/EpistasisSim")
+# setwd(("/media/lee/HDD_Array/nwanderson/EpistasisSim"))
+setwd("~/Documents/GitHub/EpistasisSim")
 
 # opts <- list(preschedule = FALSE)
 # registerDoMC(5)
@@ -147,7 +147,7 @@ rm(rawout) # , i)
 ##################
 Directional <- ABC_sequential(method="Lenormand", use_seed=T,
                            model=model, prior=prior, summary_stat_target=observed,
-                           nb_simul=5, n_cluster = 1) 
+                           nb_simul=10, n_cluster = 1) 
 
 save(Directional, file = "ABCDirectionaloutput.RData")
 

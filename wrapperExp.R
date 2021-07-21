@@ -145,10 +145,10 @@ rm(rawout) # , i)
 ##################
 ## Call easyABC ##
 ##################
-ABC_SLiM <- ABC_sequential(method="Lenormand", use_seed=T,
+Exponential <- ABC_sequential(method="Lenormand", use_seed=T,
                            model=model, prior=prior, summary_stat_target=observed,
-                           nb_simul=5, n_cluster = 1) 
+                           nb_simul=10, n_cluster = 1) 
 
-save(ABC_SLiM, file = "ABCexpoutput.RData")
+save(Exponential, file = "ABCExponentialoutput.RData")
 
 
