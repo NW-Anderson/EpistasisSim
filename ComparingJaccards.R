@@ -1,6 +1,6 @@
 setwd("~/Documents/GitHub/EpistasisSim")
 
-iter <- 100
+iter <- 2
 
 seeds <- sample(1:2^15, 2 * iter)
 npops = 10
@@ -126,4 +126,36 @@ for(i in 1:iter){
                "_seed=", seeds[iter+i],
                "_a=", ahat,
                "_b=", bhat, ".csv", sep = ''))
+}
+
+#####################
+## Selective Sweep ##
+#####################
+SSJaccards <- list("Gen6" = c(),
+                   "Gen10" = c())
+
+for(i in 1:iter){
+  system(paste("slim Sim.slim | tail -n +14 > output/polygenic.csv", sep = ""))
+  rawout <- as.matrix(read.csv(file = paste('./output/polygenic.csv', sep = "")))[,-1159]
+  for(gen in 1:2){
+    signsnps <- vector("list",10)
+    names(signsnps) <- paste('pop', 1:10)
+    for(pop in 1:10){
+      popdat <- rawout[which(rawout[,2] == pop),]
+      if(gen == 1){
+        signsnps[[pop]] <- which((popdat[2,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
+      }else if(gen == 2){
+        signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
+      }
+    }
+    jaccmat <- array(dim = c(10,10))
+    for(j in 1:9){
+      for(k in (j+1):10){
+        jaccmat[j,k] <- length(intersect(signsnps[[j]], signsnps[[k]])) / length(union(signsnps[[j]], signsnps[[k]]))
+      }
+    }
+    jaccmat <- na.omit(as.vector(jaccmat))
+    # results[(5 * i + 1):(5 *  i + 5)] <- quantile(jaccmat)
+    SSJaccards[[gen]] <- c(SSJaccards[[gen]], jaccmat)
+  }
 }
