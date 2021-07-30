@@ -145,10 +145,10 @@ rm(rawout) # , i)
 ##################
 ## Call easyABC ##
 ##################
-ABC_SLiM <- ABC_sequential(method="Lenormand", use_seed=T,
+DimRet <- ABC_sequential(method="Lenormand", use_seed=T,
                            model=model, prior=prior, summary_stat_target=observed,
-                           nb_simul=5, n_cluster = 1) 
+                           nb_simul=100, n_cluster = 8) 
 
-save(ABC_SLiM, file = "ABCDRoutput.RData")
+save(DimRet, file = "DiminishingReturns.RData")
 
 
