@@ -165,18 +165,18 @@ function (void)MakePlot(void) {
 }
 
 initialize() {
-	//	setSeed(seed);
-	defineGlobal("npops",10);
-	defineGlobal("nloci", 100);
-	defineGlobal("RR", 0.5);
-	defineGlobal("popsize", 2000);
-	defineGlobal("fitnessFunction", "directional");
-	defineGlobal("fmin",0);
-	defineGlobal("fmax",1);
-	defineGlobal("s",1.0);
-	defineGlobal("r",-10);
-	defineGlobal("a",0.2);
-	defineGlobal("b", -0.5);
+	setSeed(seed);
+//	defineGlobal("npops",10);
+//	defineGlobal("nloci", 100);
+//	defineGlobal("RR", 0.5);
+//	defineGlobal("popsize", 2000);
+//	defineGlobal("fitnessFunction", "diminishingReturns");
+//	defineGlobal("fmin",0);
+//	defineGlobal("fmax",1);
+//	defineGlobal("s",1.0);
+//	defineGlobal("r",-10);
+//	defineGlobal("a",0.2);
+//	defineGlobal("b", -0.5);
 	
 	initializeMutationRate(0);
 	
@@ -246,6 +246,6 @@ fitness(m1) {
 
 11 late() {
 	SaveVals();
-	MakePlot();
+//	MakePlot();
 	MakeOutput();
 }

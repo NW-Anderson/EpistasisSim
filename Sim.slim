@@ -2,7 +2,7 @@ function (void)MakeOutput(void) {
 	results = sim.getValue("results");
 	catn(c("Gen,", "Pop,", "Loci" + 1:nloci + ","));
 	for(i in 0:(nrow(results)-1)) {
-		catn(paste(results[i,], sep = ", "));	
+		catn(paste(results[i,], sep = ", "));
 	}
 }
 
@@ -28,7 +28,7 @@ function (void)SaveVals(void) {
 	genomesperpop = length(sim.subpopulations[0].genomes);
 	
 	for(pop in 0:(npops-1)) {
-		mutations = sim.subpopulations[pop].genomes.mutations;		
+		mutations = sim.subpopulations[pop].genomes.mutations;
 		for(pos in 0:(nloci-1)) {
 			results[(mult * npops + pop),(pos + 2)] = sum(mutations.position == pos) / genomesperpop;
 		}
@@ -48,13 +48,15 @@ function (void)SetUpStartingPops(void) {
 	for(pos in 0:(nloci-1)){
 		genomes[which(rbinom(length(genomes),1,startfreq[pos])==1)].addNewMutation(m1,selcoef[pos],pos);
 	}
+	maxpolygenicscore = 2 * sum(selcoef[0:(nloci-1)]);
+	sim.setValue("maxpolygenicscore", maxpolygenicscore);
 }
 
 
 ////////////////////////////
 
 function (void)ReadLog(void) {
-//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/selected_snps.info.txt");
+	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/selected_snps.info.txt");
 	lines = readFile("~/Documents/GitHub/EpistasisSim/selected_snps.info.txt");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	selcoef = c();
@@ -71,33 +73,111 @@ function (void)ReadLog(void) {
 
 ////////////////////////////
 
-//function (void)GetFits(void) {
-//	inds = sim.subpopulations.individuals;
-//	polygenicscore = inds.sumOfMutationsOfType(m1);
-//	
-//	if(fitnessFunction == "directional") {
-//		inds.fitnessScaling = fmin + ((fmax - fmin) / ((1 + s * exp(r *	(polygenicscore + b))) ^(1/s)));
-//	}
-//	
-//	if(fitnessFunction == "diminishingReturns") {
-//		inds.fitnessScaling = max(c(0,fmin + (fmax - fmin) * (1 - 1 / exp(a * (polygenicscore + b)))));
-//	}
-//	
-//	if(fitnessFunction == "exponential") {
-//		inds.fitnessScaling = exp(a * (polygenicscore + b));
-//	}
-//}
+function (void)GetFits(void) {
+	maxpolygenicscore = sim.getValue("maxpolygenicscore");
+	inds = sim.subpopulations.individuals;
+	polygenicscore = inds.sumOfMutationsOfType(m1);
+	polygenicscore = polygenicscore / maxpolygenicscore;
+	
+	if(fitnessFunction == "directional") {
+		inds.fitnessScaling = fmin + ((fmax - fmin) / ((1 + s * exp(r *	(polygenicscore + b))) ^(1/s)));
+	}
+	
+	if(fitnessFunction == "diminishingReturns") {
+		inds.fitnessScaling = max(c(0,fmin + (fmax - fmin) * (1 - 1 / exp(a * (polygenicscore + b)))));
+	}
+	
+	if(fitnessFunction == "exponential") {
+		inds.fitnessScaling = exp(a * (polygenicscore + b));
+	}
+	if(sim.generation == 1) {
+		pgsarray = array(rep(0.0, 3 * npops * popsize), c(3, npops * popsize));
+		fitarray = array(rep(0.0, 3 * npops * popsize), c(3, npops * popsize));
+		pgsarray[0,] = polygenicscore;
+		fitarray[0,] = inds.fitnessScaling;
+		sim.setValue("pgsarray", pgsarray);
+		sim.setValue('fitarray', fitarray);
+	}
+	if(sim.generation == 7) {
+		pgsarray = sim.getValue("pgsarray");
+		fitarray = sim.getValue('fitarray');
+		pgsarray[1,] = polygenicscore;
+		fitarray[1,] = inds.fitnessScaling;
+		sim.setValue("pgsarray", pgsarray);
+		sim.setValue('fitarray', fitarray);
+	
+	}
+	if(sim.generation == 11) {
+		pgsarray = sim.getValue("pgsarray");
+		fitarray = sim.getValue('fitarray');
+		pgsarray[2,] = polygenicscore;
+		fitarray[2,] = inds.fitnessScaling;
+		sim.setValue("pgsarray", pgsarray);
+		sim.setValue('fitarray', fitarray);
+	}
+}
 
 ////////////////////////////
 
+function (void)MakePlot(void) {
+	pgsarray = sim.getValue("pgsarray");
+	fitarray = sim.getValue('fitarray');
+	x = 0:200 / 200;
+	if(fitnessFunction == "directional") {
+		y = fmin + ((fmax - fmin) / ((1 + s * exp(r *	(x + b))) ^(1/s)));
+	}
+	
+	if(fitnessFunction == "diminishingReturns") {
+		y = max(c(0,fmin + (fmax - fmin) * (1 - 1 / exp(a * (x + b)))));
+	}
+	
+	if(fitnessFunction == "exponential") {
+		y = exp(a * (x + b));
+	}
+	
+	rstr = paste('{',
+		'pgsgen0 <- c(' + paste(pgsarray[0,], sep = ", ") + ')',
+		'pgsgen6 <- c(' + paste(pgsarray[1,], sep = ", ") + ')',
+		'pgsgen10 <- c(' + paste(pgsarray[2,], sep = ", ") + ')',
+		'x <- c(' + paste(x, sep = ", ") + ')',
+		'y <- c(' + paste(y, sep = ", ") + ')',
+		'png(width=12, height=18, units="in", res=72, file="' + pngPath + '")',
+		'par(mar=c(4.0, 4.0, 1.5, 1.5), mfrow = c(2,1))',
+//		'plot(density(pgsgen0), col = "red", xlim = c(min(density(pgsgen0)$x), max(density(pgsgen10)$x)), ylim = c(0,1))',
+		'plot(x = density(pgsgen0)$x, y = density(pgsgen0)$y / max(density(pgsgen0)$y), col = "red", xlim = c(0,1), ylim = c(0,1), type = "l")',
+		'lines(x = density(pgsgen6)$x, y = density(pgsgen6)$y / max(density(pgsgen6)$y), col = "green")',
+		'lines(x = density(pgsgen10)$x, y = density(pgsgen10)$y / max(density(pgsgen10)$y), col = "blue")',
+		'lines(x = x, y = y)',
+		///////////////////////////
+		'fitgen0 <- c(' + paste(fitarray[0,], sep = ", ") + ')',
+		'fitgen6 <- c(' + paste(fitarray[1,], sep = ", ") + ')',
+		'fitgen10 <- c(' + paste(fitarray[2,], sep = ", ") + ')',
+		'plot(density(fitgen0), xlim = c(min(density(fitgen0)$x), max(density(fitgen10)$x)), col = "red")',
+		'lines(density(fitgen6), col = "green")',
+		'lines(density(fitgen10), col = "blue")',
+		'box()',
+		'dev.off()',
+		'}', sep="\n");
+	
+	scriptPath = writeTempFile("plot_", ".R", rstr);
+	system(RSCRIPT, args=scriptPath);
+	deleteFile(scriptPath);
+}
+
 initialize() {
-//	setSeed(seed);
-	defineGlobal("npops",10);
-	defineGlobal("nloci", 1156);
-	defineGlobal("RR", 0.5);
-	defineGlobal("popsize", 2000);
-
-
+	setSeed(seed);
+//	defineGlobal("npops",10);
+//	defineGlobal("nloci", 100);
+//	defineGlobal("RR", 0.5);
+//	defineGlobal("popsize", 2000);
+//	defineGlobal("fitnessFunction", "diminishingReturns");
+//	defineGlobal("fmin",0);
+//	defineGlobal("fmax",1);
+//	defineGlobal("s",1.0);
+//	defineGlobal("r",-10);
+//	defineGlobal("a",0.2);
+//	defineGlobal("b", -0.5);
+	
 	initializeMutationRate(0);
 	
 	initializeMutationType("m1", 0.5, "f", 0.0);
@@ -106,12 +186,20 @@ initialize() {
 	
 	initializeGenomicElement(g1, 0, (nloci - 1));
 	initializeRecombinationRate(RR);
+	
+	// initializing a path to R for running liveplotting	
+	if (fileExists("/usr/bin/Rscript"))
+		defineConstant("RSCRIPT", "/usr/bin/Rscript");
+	else if (fileExists("/usr/local/bin/Rscript"))
+		defineConstant("RSCRIPT", "/usr/local/bin/Rscript");
+	else
+		stop("Couldn't find Rscript.");
 }
 
 
 
 
-//fitness(m1) { 
+//fitness(m1) {
 //	return 1.0;
 //}
 
@@ -133,6 +221,11 @@ initialize() {
 	ReadLog();
 	SetUpStartingPops();
 	InitializeFreqArray();
+	
+	// getting ready for liveplotting
+	defineConstant("pngPath", writeTempFile("plot_", ".png", ""));
+	if (exists("slimgui"))
+		slimgui.openDocument(pngPath);
 }
 
 
@@ -153,5 +246,6 @@ initialize() {
 
 11 late() {
 	SaveVals();
+//	MakePlot();
 	MakeOutput();
 }
