@@ -135,15 +135,34 @@ function (void)MakePlot(void) {
 		y = exp(a * (x + b));
 	}
 	
+//phenotype = sim.subpopulations.individuals.sumOfMutationsOfType(m1);
+//fits = rep(0.0, 20000);
+//for(i in 0:19999){
+//	individualofinterest = sim.subpopulations.individuals[i];
+//	mutsites = unique(individualofinterest.genomes.mutations.position);
+//	fit = 1;
+//	for(j in 0:(length(mutsites)-1)){
+//		if(sum(mutsites == mutsites[j]) == 2){
+//			fit = fit * (1 + unique(individualofinterest.genomes.mutations.selectionCoeff)[j]);
+//		}
+//		if(sum(mutsites == mutsites[j]) == 1){
+//			fit = fit * (1 + 0.5 * unique(individualofinterest.genomes.mutations.selectionCoeff)[j]);
+//		}
+//	}
+//	fits[i] = fit;
+//}
+	
 	rstr = paste('{',
 		'pgsgen0 <- c(' + paste(pgsarray[0,], sep = ", ") + ')',
 		'pgsgen6 <- c(' + paste(pgsarray[1,], sep = ", ") + ')',
 		'pgsgen10 <- c(' + paste(pgsarray[2,], sep = ", ") + ')',
 		'x <- c(' + paste(x, sep = ", ") + ')',
 		'y <- c(' + paste(y, sep = ", ") + ')',
+//		'fits <- c(' + paste(fits, sep = ", ") + ')',
+//		'phenotype <- c(' + paste(phenotype, sep = ", ") + ')',
 		'png(width=12, height=18, units="in", res=72, file="' + pngPath + '")',
 		'par(mar=c(4.0, 4.0, 1.5, 1.5), mfrow = c(2,1))',
-//		'plot(density(pgsgen0), col = "red", xlim = c(min(density(pgsgen0)$x), max(density(pgsgen10)$x)), ylim = c(0,1))',
+//		'plot(x=phenotype, y = fits)',
 		'plot(x = density(pgsgen0)$x, y = density(pgsgen0)$y / max(density(pgsgen0)$y), col = "red", xlim = c(0,1), ylim = c(0,1), type = "l")',
 		'lines(x = density(pgsgen6)$x, y = density(pgsgen6)$y / max(density(pgsgen6)$y), col = "green")',
 		'lines(x = density(pgsgen10)$x, y = density(pgsgen10)$y / max(density(pgsgen10)$y), col = "blue")',
@@ -167,16 +186,16 @@ function (void)MakePlot(void) {
 initialize() {
 	setSeed(seed);
 //	defineGlobal("npops",10);
-//	defineGlobal("nloci", 100);
+//	defineGlobal("nloci", 1156);
 //	defineGlobal("RR", 0.5);
 //	defineGlobal("popsize", 2000);
-//	defineGlobal("fitnessFunction", "diminishingReturns");
+//	defineGlobal("fitnessFunction", "exponential");
 //	defineGlobal("fmin",0);
 //	defineGlobal("fmax",1);
 //	defineGlobal("s",1.0);
 //	defineGlobal("r",-10);
-//	defineGlobal("a",0.2);
-//	defineGlobal("b", -0.5);
+//	defineGlobal("a",5);
+//	defineGlobal("b", -1);
 	
 	initializeMutationRate(0);
 	
@@ -232,6 +251,7 @@ fitness(m1) {
 
 1: late() {
 	GetFits();
+//	MakePlot();
 }
 
 
@@ -246,6 +266,6 @@ fitness(m1) {
 
 11 late() {
 	SaveVals();
-//	MakePlot();
+	MakePlot();
 	MakeOutput();
 }
