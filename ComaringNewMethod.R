@@ -7,12 +7,12 @@ iter <- 1
 
 seeds <- sample(1:2^15, 5 * iter)
 npops = 10
-nloci = 1156
+nloci = 100
 RR = 0.5
 popsize = 2000
 fmin = 0
 fmax = 1
-ahat <- 10
+ahat <- 1
 bhat <- 0
 #####################
 ## New Exponential ##
@@ -64,16 +64,52 @@ for(i in 1:iter){
                "_a=", ahat,
                "_b=", bhat, ".csv", sep = ''))
 }
+############################
+## Multiplicative Fitness ##
+############################
+SSJaccards <- list("Gen6" = c(),
+                   "Gen10" = c())
 
-
+for(i in 1:iter){
+  system(paste("slim -d seed=", seeds[3 * iter + i],
+               " -d npops=", npops,
+               " -d nloci=", nloci,
+               " -d RR=",RR,
+               " -d popsize=", popsize,
+               " Sim.slim | tail -n +14 > output/polygenic.csv", sep = ""))
+  rawout <- as.matrix(read.csv(file = paste('./output/polygenic.csv', sep = "")))[,-1159]
+  for(gen in 1:2){
+    signsnps <- vector("list",10)
+    names(signsnps) <- paste('pop', 1:10)
+    for(pop in 1:10){
+      popdat <- rawout[which(rawout[,2] == pop),]
+      if(gen == 1){
+        signsnps[[pop]] <- which((popdat[2,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
+      }else if(gen == 2){
+        signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
+      }
+    }
+    jaccmat <- array(dim = c(10,10))
+    for(j in 1:9){
+      for(k in (j+1):10){
+        jaccmat[j,k] <- length(intersect(signsnps[[j]], signsnps[[k]])) / length(union(signsnps[[j]], signsnps[[k]]))
+      }
+    }
+    jaccmat <- na.omit(as.vector(jaccmat))
+    # results[(5 * i + 1):(5 *  i + 5)] <- quantile(jaccmat)
+    SSJaccards[[gen]] <- c(SSJaccards[[gen]], jaccmat)
+  }
+}
 ################################################
 
-treatment <- c(rep("New Directional", times = 90), 
-               )
+treatment <- c(rep("New Exponential", times = 90),
+               rep("Selective Sweep", times = 90))
 
-generation <- c(rep(c(6,10), times = 1, each = 45))
+generation <- c(rep(c(6,10), times = 2, each = 45))
 Jaccards <- c(NewExpJaccards$Gen6,
-              NewExpJaccards$Gen10)
+              NewExpJaccards$Gen10,
+              SSJaccards$Gen6,
+              SSJaccards$Gen10)
 data <- data.frame(treatment, generation, Jaccards)
 
 ggraptR(data)

@@ -88,7 +88,7 @@ function (void)GetFits(void) {
 	}
 	
 	if(fitnessFunction == "exponential") {
-		inds.fitnessScaling = exp(a * (polygenicscore + b)^2)-1;
+		inds.fitnessScaling = exp(a * (polygenicscore)^2);
 	}
 	if(sim.generation == 1) {
 		pgsarray = array(rep(0.0, 3 * npops * popsize), c(3, npops * popsize));
@@ -132,7 +132,7 @@ function (void)MakePlot(void) {
 	}
 	
 	if(fitnessFunction == "exponential") {
-		y = exp(a * (x^2 + b)) - 1;
+		y = exp(a * (x^2 + b));
 	}
 	
 //phenotype = sim.subpopulations.individuals.sumOfMutationsOfType(m1);
