@@ -57,14 +57,14 @@ function (void)SetUpStartingPops(void) {
 
 function (void)ReadLog(void) {
 	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/selected_snps.info.txt");
-	lines = readFile("~/Documents/GitHub/EpistasisSim/selected_snps.info.txt");
+	lines = readFile("~/Documents/GitHub/EpistasisSim/hap_blocks.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	selcoef = c();
 	startfreq = c();
 	for (line in lines[1:(length(lines) - 1)]){
 		fields = strsplit(line, ",");
-		selcoef = c(selcoef, asFloat(fields[2]));
-		startfreq = c(startfreq, asFloat(fields[3]));
+		startfreq = c(startfreq, asFloat(fields[6]));
+		selcoef = c(selcoef, asFloat(fields[7]));
 	}
 	sim.setValue("selcoef", selcoef);
 	sim.setValue("startfreq", startfreq);
@@ -84,7 +84,9 @@ function (void)GetFits(void) {
 	}
 	
 	if(fitnessFunction == "diminishingReturns") {
-		inds.fitnessScaling = max(c(0,fmin + (fmax - fmin) * (1 - 1 / exp(a * (polygenicscore + b)))));
+		tmp = fmin + (fmax - fmin) * (1 - 1 / exp(a * (polygenicscore + b)));
+		tmp[tmp < 0.0] = 0.0;
+		inds.fitnessScaling = tmp;
 	}
 	
 	if(fitnessFunction == "exponential") {
@@ -128,11 +130,12 @@ function (void)MakePlot(void) {
 	}
 	
 	if(fitnessFunction == "diminishingReturns") {
-		y = max(c(0,fmin + (fmax - fmin) * (1 - 1 / exp(a * (x + b)))));
+		y = fmin + (fmax - fmin) * (1 - 1 / exp(a * (x + b)));
+		y[y < 0.0] = 0.0;
 	}
 	
 	if(fitnessFunction == "exponential") {
-		y = exp(a * (x^2 + b));
+		y = exp(a * (x^2));
 	}
 	
 //phenotype = sim.subpopulations.individuals.sumOfMutationsOfType(m1);
@@ -186,16 +189,16 @@ function (void)MakePlot(void) {
 initialize() {
 	setSeed(seed);
 //	defineGlobal("npops",10);
-//	defineGlobal("nloci", 1156);
+//	defineGlobal("nloci", 121);
 //	defineGlobal("RR", 0.5);
 //	defineGlobal("popsize", 2000);
-//	defineGlobal("fitnessFunction", "exponential");
+//	defineGlobal("fitnessFunction", "directional");
 //	defineGlobal("fmin",0);
 //	defineGlobal("fmax",1);
 //	defineGlobal("s",1.0);
 //	defineGlobal("r",-10);
-//	defineGlobal("a",5);
-//	defineGlobal("b", -1);
+//	defineGlobal("a",10);
+//	defineGlobal("b", -0.25);
 	
 	initializeMutationRate(0);
 	
@@ -218,9 +221,13 @@ initialize() {
 
 
 
-//fitness(m1) {
-//	return 1.0;
-//}
+fitness(m1) {
+	if(fitnessFunction == "diminishingReturns" | fitnessFunction == "directional") {
+		return 1.0;
+	} else {
+		return relFitness;
+	}
+}
 
 
 

@@ -57,14 +57,14 @@ function (void)SetUpStartingPops(void) {
 
 function (void)ReadLog(void) {
 	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/selected_snps.info.txt");
-	lines = readFile("~/Documents/GitHub/EpistasisSim/selected_snps.info.txt");
+	lines = readFile("~/Documents/GitHub/EpistasisSim/hap_blocks.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	selcoef = c();
 	startfreq = c();
 	for (line in lines[1:(length(lines) - 1)]){
 		fields = strsplit(line, ",");
-		selcoef = c(selcoef, asFloat(fields[2]));
-		startfreq = c(startfreq, asFloat(fields[3]));
+		startfreq = c(startfreq, asFloat(fields[6]));
+		selcoef = c(selcoef, asFloat(fields[7]));
 	}
 	sim.setValue("selcoef", selcoef);
 	sim.setValue("startfreq", startfreq);
@@ -88,7 +88,7 @@ function (void)GetFits(void) {
 	}
 	
 	if(fitnessFunction == "exponential") {
-		inds.fitnessScaling = exp(a * (polygenicscore^2 + b));
+		inds.fitnessScaling = exp(a * (polygenicscore)^2);
 	}
 	if(sim.generation == 1) {
 		pgsarray = array(rep(0.0, 3 * npops * popsize), c(3, npops * popsize));
@@ -132,7 +132,7 @@ function (void)MakePlot(void) {
 	}
 	
 	if(fitnessFunction == "exponential") {
-		y = exp(a * (x^2 + b));
+		y = exp(a * (x^2));
 	}
 	
 //phenotype = sim.subpopulations.individuals.sumOfMutationsOfType(m1);
@@ -186,7 +186,7 @@ function (void)MakePlot(void) {
 initialize() {
 	setSeed(seed);
 //	defineGlobal("npops",10);
-//	defineGlobal("nloci", 1156);
+//	defineGlobal("nloci", 121);
 //	defineGlobal("RR", 0.5);
 //	defineGlobal("popsize", 2000);
 //	defineGlobal("fitnessFunction", "exponential");
@@ -249,10 +249,10 @@ initialize() {
 
 
 
-1: late() {
-	GetFits();
-//	MakePlot();
-}
+//1: late() {
+//	GetFits();
+////	MakePlot();
+//}
 
 
 
@@ -266,6 +266,6 @@ initialize() {
 
 11 late() {
 	SaveVals();
-	MakePlot();
+//	MakePlot();
 	MakeOutput();
 }
