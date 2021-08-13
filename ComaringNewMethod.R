@@ -17,6 +17,7 @@ GetJaccards <- function(rawout, cutoff, results){
     for(j in 1:9){
       for(k in (j+1):10){
         jaccmat[j,k] <- length(intersect(signsnps[[j]], signsnps[[k]])) / length(union(signsnps[[j]], signsnps[[k]]))
+        if(length(union(signsnps[[j]], signsnps[[k]])) == 0) jaccmat[j,k] <- 0
         cat("Intersect: ", length(intersect(signsnps[[j]], signsnps[[k]])))
         cat("    Union: ", length(union(signsnps[[j]], signsnps[[k]])), "\n")
       }
@@ -44,7 +45,7 @@ RR = 0.5
 popsize = 1750
 fmin = 0
 fmax = 1
-ahat <- 5
+ahat <- 3
 bhat <- 0
 
 ########################
@@ -62,7 +63,6 @@ for(i in 1:iter){
                " -d fmin=", fmin,
                " -d fmax=", fmax,
                " -d a=", ahat,
-               " -d b=", bhat,
                " New.slim | tail -n +14 > output/exponential",
                "_seed=", seeds[i],
                "_a=", ahat,
@@ -143,9 +143,9 @@ for(i in 1:iter){
 # shat <- sum(ABC_SLiM$weights * ABC_SLiM$param[,1])
 # rhat <- sum(ABC_SLiM$weights * ABC_SLiM$param[,2])
 # bhat <- sum(ABC_SLiM$weights * ABC_SLiM$param[,3]) * 100
-shat <- 1
-rhat <- -10
-bhat <- -0.2
+shat <- 0.1
+rhat <- -15
+bhat <- -0.3
 
 DirectionalJaccards <- list("Gen6" = c(),
                             "Gen10" = c())
@@ -187,7 +187,7 @@ for(i in 1:iter){
 ###################################
 
 ahat <- 10
-bhat <- -0.2
+bhat <- -0.25
 
 DimRetJaccards <- list("Gen6" = c(),
                        "Gen10" = c())
@@ -221,6 +221,43 @@ for(i in 1:iter){
 }
 
 
+###########################
+## Stabilizing Epistasis ##
+###########################
+
+mu <- 0.4
+std <- 0.07
+
+StabJaccards <- list("Gen6" = c(),
+                       "Gen10" = c())
+for(i in 1:iter){
+  system(paste("slim -d seed=", seeds[2 * iter + i],
+               " -d npops=", npops,
+               " -d nloci=", nloci,
+               " -d RR=",RR,
+               " -d popsize=", popsize,
+               " -d " ,'"', 'fitnessFunction=', "'", 'stabilizing', "'", '"',
+               " -d mu=", mu,
+               " -d std=", std,
+               " New.slim | tail -n +14 > output/stabilizing",
+               "_seed=", seeds[2 * iter + i],
+               "_mu=", mu,
+               "_std=", std, ".csv", sep = ""))
+  rawout <- as.matrix(read.csv(file = paste('./output/stabilizing',
+                                            "_seed=", seeds[2 * iter + i],
+                                            "_mu=", mu,
+                                            "_std=", std, ".csv", sep = "")))
+  rawout <- rawout[,-ncol(rawout)]
+  StabJaccards <- GetJaccards(rawout = rawout,
+                                cutoff = haplotypedata$Gen10_AFC10,
+                                results = StabJaccards)
+  system(paste("rm ./output/stabilizing",
+               "_seed=", seeds[2 * iter + i],
+               "_mu=", mu,
+               "_std=", std, ".csv", sep = ''))
+}
+
+
 ################################################
 
 treatment <- c(rep("A Empirical", times = 73),
@@ -228,10 +265,11 @@ treatment <- c(rep("A Empirical", times = 73),
                rep("C Positive Epistasis", times = 90),
                rep("D Negative Epistasis", times = 90),
                rep("E Directional Epistasis", times = 90),
-               rep("F Truncating Epistasis", times = 90))
+               rep("F Truncating Epistasis", times = 90),
+               rep("G Stabilizing Epistasis", times = 90))
 
 generation <- c(rep(6, each = 45), rep(10, times = 28),
-                rep(c(6,10), times = 5, each = 45))
+                rep(c(6,10), times = 6, each = 45))
 
 Jaccards <- c(hap_blocks.jaccard.sim10.RDS[[1]],
               hap_blocks.jaccard.sim10.RDS[[2]],
@@ -244,7 +282,9 @@ Jaccards <- c(hap_blocks.jaccard.sim10.RDS[[1]],
               DirectionalJaccards$Gen6,
               DirectionalJaccards$Gen10,
               DimRetJaccards$Gen6,
-              DimRetJaccards$Gen10)
+              DimRetJaccards$Gen10,
+              StabJaccards$Gen6,
+              StabJaccards$Gen10)
 data <- data.frame(treatment, generation, Jaccards)
 
 ggraptR(data)
