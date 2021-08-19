@@ -34,7 +34,7 @@ GetJaccards <- function(rawout, cutoff, results){
 library(ggraptR)
 setwd("~/Documents/GitHub/EpistasisSim")
 haplotypedata <- readRDS(file = 'hap_blocks.RDS')
-hap_blocks.jaccard.sim10.RDS <- readRDS(file = 'hap_blocks.jaccard.sim10.RDS')
+hap_blocks.jaccard.sim10.RDS <- readRDS(file = 'hap_blocks.jaccard.sim10.gen10_cutoff.RDS')
 
 iter <- 1
 
@@ -45,8 +45,10 @@ RR = 0.5
 popsize = 1750
 fmin = 0
 fmax = 1
-ahat <- 3
+ahat <- 8
 bhat <- 0
+scaleT0 <- 0
+scales <- 0
 
 ########################
 ## Positive Epistasis ##
@@ -63,6 +65,8 @@ for(i in 1:iter){
                " -d fmin=", fmin,
                " -d fmax=", fmax,
                " -d a=", ahat,
+               " -d scaleT0=", scaleT0,
+               " -d scales=", scales,
                " New.slim | tail -n +14 > output/exponential",
                "_seed=", seeds[i],
                "_a=", ahat,
@@ -97,6 +101,8 @@ for(i in 1:iter){
                " -d fmax=", fmax,
                " -d a=", ahat,
                " -d b=", bhat,
+               " -d scaleT0=", scaleT0,
+               " -d scales=", scales,
                " New.slim | tail -n +14 > output/exponential",
                "_seed=", seeds[i],
                "_a=", ahat,
@@ -126,6 +132,8 @@ for(i in 1:iter){
                " -d nloci=", nloci,
                " -d RR=",RR,
                " -d popsize=", popsize,
+               " -d scaleT0=", scaleT0,
+               " -d scales=", scales,
                " sim.slim | tail -n +14 > output/polygenic.csv", sep = ""))
   rawout <- as.matrix(read.csv(file = paste('./output/polygenic.csv', sep = "")))
   rawout <- rawout[,-ncol(rawout)]
@@ -161,6 +169,8 @@ for(i in 1:iter){
                " -d s=", shat,
                " -d r=", rhat,
                " -d b=", bhat,
+               " -d scaleT0=", scaleT0,
+               " -d scales=", scales,
                " New.slim | tail -n +14 > output/directional",
                "_seed=", seeds[i],
                "_s=", shat,
@@ -202,6 +212,8 @@ for(i in 1:iter){
                " -d fmax=", fmax,
                " -d b=", bhat,
                " -d a=", ahat,
+               " -d scaleT0=", scaleT0,
+               " -d scales=", scales,
                " New.slim | tail -n +14 > output/diminishingReturns",
                "_seed=", seeds[2 * iter + i],
                "_a=", ahat,
@@ -239,6 +251,8 @@ for(i in 1:iter){
                " -d " ,'"', 'fitnessFunction=', "'", 'stabilizing', "'", '"',
                " -d mu=", mu,
                " -d std=", std,
+               " -d scaleT0=", scaleT0,
+               " -d scales=", scales,
                " New.slim | tail -n +14 > output/stabilizing",
                "_seed=", seeds[2 * iter + i],
                "_mu=", mu,
@@ -259,14 +273,17 @@ for(i in 1:iter){
 
 
 ################################################
-
-treatment <- c(rep("A Empirical", times = 73),
-               rep("B Multitplicative", times = 90),
-               rep("C Positive Epistasis", times = 90),
-               rep("D Negative Epistasis", times = 90),
-               rep("E Directional Epistasis", times = 90),
-               rep("F Truncating Epistasis", times = 90),
-               rep("G Stabilizing Epistasis", times = 90))
+if(scales == 1 | scaleT0 == 1){
+  DimRetJaccards$Gen6 <- rep(0.0, times = 45)
+  DimRetJaccards$Gen10 <- rep(0.0, times = 45)
+}
+treatment <- c(rep("G. Empirical", times = 73),
+               rep("A. Multitplicative", times = 90),
+               rep("B. Positive Epistasis", times = 90),
+               rep("C. Negative Epistasis", times = 90),
+               rep("D. Directional Epistasis", times = 90),
+               rep("E. Truncating Epistasis", times = 90),
+               rep("F. Stabilizing Epistasis", times = 90))
 
 generation <- c(rep(6, each = 45), rep(10, times = 28),
                 rep(c(6,10), times = 6, each = 45))
@@ -287,4 +304,17 @@ Jaccards <- c(hap_blocks.jaccard.sim10.RDS[[1]],
               StabJaccards$Gen10)
 data <- data.frame(treatment, generation, Jaccards)
 
-ggraptR(data)
+# png(filename = "EmpericalBoth.png", width = 1800, height = 1000)
+ggplot(data, aes(y=Jaccards, x=as.factor(treatment))) + 
+  geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
+  theme_grey() + 
+  theme(text=element_text(family="sans", face="plain", color="#000000", size=12, hjust=0.5, vjust=0.5)) + 
+  guides(fill=guide_legend(title="generation")) + 
+  ggtitle("Pairwise Similarity in Allele Frequency Shifts") + 
+  xlab("Fitness Function") + 
+  ylab("Jaccard Score") + 
+  ylim(0,1)+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+# dev.off()
+
+# ggraptR(data)
