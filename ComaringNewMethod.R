@@ -24,7 +24,7 @@ GetJaccards <- function(rawout, cutoff, results){
     }
     jaccmat <- na.omit(as.vector(jaccmat))
     # results[(5 * i + 1):(5 *  i + 5)] <- quantile(jaccmat)
-    results[[gen]] <- c(results[[gen]], jaccmat)
+    results[[gen]] <- c(results[[gen]], mean(jaccmat))
   }
   return(results)
 }
@@ -33,16 +33,16 @@ GetJaccards <- function(rawout, cutoff, results){
 ################
 library(ggraptR)
 setwd("~/Documents/GitHub/EpistasisSim")
-haplotypedata <- readRDS(file = 'hap_blocks.RDS')
-hap_blocks.jaccard.sim10.RDS <- readRDS(file = 'hap_blocks.jaccard.sim10.gen10_cutoff.RDS')
+haplotypedata <- fread(file = "sortedsnpdata.csv")
+hap_blocks.jaccard.sim10.RDS <- readRDS(file = 'hap_block_snps.jaccard.sim10.RDS')
 
 iter <- 1
 
 seeds <- sample(1:2^15, 5 * iter)
 npops = 10
-nloci = 121
+nloci = 4977
 RR = 0.5
-popsize = 1750
+popsize = 100
 fmin = 0
 fmax = 1
 ahat <- 8
@@ -313,7 +313,7 @@ ggplot(data, aes(y=Jaccards, x=as.factor(treatment))) +
   ggtitle("Pairwise Similarity in Allele Frequency Shifts") + 
   xlab("Fitness Function") + 
   ylab("Jaccard Score") + 
-  ylim(0,1)+
+  ylim(0,1) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 # dev.off()
 
