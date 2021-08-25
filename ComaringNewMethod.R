@@ -8,9 +8,9 @@ GetJaccards <- function(rawout, cutoff, results){
     for(pop in 1:10){
       popdat <- rawout[which(rawout[,2] == pop),]
       if(gen == 1){
-        signsnps[[pop]] <- which((popdat[2,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= cutoff)
+        signsnps[[pop]] <- which((popdat[2,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= cutoff[1:nloci])
       }else if(gen == 2){
-        signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= cutoff)
+        signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= cutoff[1:nloci])
       }
     }
     jaccmat <- array(dim = c(10,10))
@@ -24,25 +24,32 @@ GetJaccards <- function(rawout, cutoff, results){
     }
     jaccmat <- na.omit(as.vector(jaccmat))
     # results[(5 * i + 1):(5 *  i + 5)] <- quantile(jaccmat)
-    results[[gen]] <- c(results[[gen]], mean(jaccmat))
+    if(gen == 1) results[1,] <- mean(jaccmat)
+    if(gen == 2) results[2,] <- mean(jaccmat)
+    
   }
   return(results)
 }
 ################
 ## Parameters ##
 ################
+library(doMC)
+library(stringr)
+library(foreach)
 library(ggraptR)
+library(data.table)
+opts <- list(preschedule = FALSE)
+registerDoMC(5)
 setwd("~/Documents/GitHub/EpistasisSim")
 haplotypedata <- fread(file = "sortedsnpdata.csv")
 hap_blocks.jaccard.sim10.RDS <- readRDS(file = 'hap_block_snps.jaccard.sim10.RDS')
 
-iter <- 1
+iter <- 2
 
 seeds <- sample(1:2^15, 5 * iter)
 npops = 10
-nloci = 4977
-RR = 0.5
-popsize = 100
+nloci = 500
+popsize = 1000
 fmin = 0
 fmax = 1
 ahat <- 8
@@ -53,13 +60,11 @@ scales <- 0
 ########################
 ## Positive Epistasis ##
 ########################
-ExpJaccards <- list("Gen6" = c(),
-                      "Gen10" = c())
-for(i in 1:iter){
+ExpJaccards <- foreach(i = 1:iter, .options.multicore=opts, .combine = 'cbind') %dopar%{
+  results <- array(dim = c(2,1))
   system(paste("slim -d seed=", seeds[i],
                " -d npops=", npops,
                " -d nloci=", nloci,
-               " -d RR=",RR,
                " -d popsize=", popsize,
                " -d " ,'"', 'fitnessFunction=', "'", 'exponential', "'", '"',
                " -d fmin=", fmin,
@@ -76,25 +81,25 @@ for(i in 1:iter){
                                             "_a=", ahat,
                                             "_b=", bhat, ".csv", sep = "")))
   rawout <- rawout[,-ncol(rawout)]
-  ExpJaccards <- GetJaccards(rawout = rawout,
+  results <- GetJaccards(rawout = rawout,
                                cutoff = haplotypedata$Gen10_AFC10,
-                               results = ExpJaccards)
+                               results = results)
   system(paste("rm ./output/exponential",
                "_seed=", seeds[i],
                "_a=", ahat,
                "_b=", bhat, ".csv", sep = ''))
+  return(results)
 }
+rownames(ExpJaccards) <- c("Gen6", "Gen10")
 ########################
 ## Negative Epistasis ##
 ########################
 ahat <- -ahat
-NegJaccards <- list("Gen6" = c(),
-                    "Gen10" = c())
-for(i in 1:iter){
-  system(paste("slim -d seed=", seeds[i],
+NegJaccards <- foreach(i = 1:iter, .options.multicore=opts, .combine = 'cbind') %dopar%{
+  results <- array(dim = c(2,1))
+  system(paste("slim -d seed=", seeds[iter + i],
                " -d npops=", npops,
                " -d nloci=", nloci,
-               " -d RR=",RR,
                " -d popsize=", popsize,
                " -d " ,'"', 'fitnessFunction=', "'", 'exponential', "'", '"',
                " -d fmin=", fmin,
@@ -112,37 +117,37 @@ for(i in 1:iter){
                                             "_a=", ahat,
                                             "_b=", bhat, ".csv", sep = "")))
   rawout <- rawout[,-ncol(rawout)]
-  NegJaccards <- GetJaccards(rawout = rawout,
-                             cutoff = haplotypedata$Gen10_AFC10,
-                             results = NegJaccards)
+  results <- GetJaccards(rawout = rawout,
+                         cutoff = haplotypedata$Gen10_AFC10,
+                         results = results)
   system(paste("rm ./output/exponential",
                "_seed=", seeds[i],
                "_a=", ahat,
                "_b=", bhat, ".csv", sep = ''))
+  return(results)
 }
+rownames(NegJaccards) <- c("Gen6", "Gen10")
 #############################
 ## Multiplicative Fitness  ##
 #############################
-SSJaccards <- list("Gen6" = c(),
-                     "Gen10" = c())
-
-for(i in 1:iter){
-  system(paste("slim -d seed=", seeds[3 * iter + i],
+SSJaccards <- foreach(i = 1:iter, .options.multicore=opts, .combine = 'cbind') %dopar%{
+  results <- array(dim = c(2,1))
+  system(paste("slim -d seed=", seeds[2 * iter + i],
                " -d npops=", npops,
                " -d nloci=", nloci,
-               " -d RR=",RR,
                " -d popsize=", popsize,
                " -d scaleT0=", scaleT0,
                " -d scales=", scales,
                " sim.slim | tail -n +14 > output/polygenic.csv", sep = ""))
   rawout <- as.matrix(read.csv(file = paste('./output/polygenic.csv', sep = "")))
   rawout <- rawout[,-ncol(rawout)]
-  SSJaccards <- GetJaccards(rawout = rawout,
-                              cutoff = haplotypedata$Gen10_AFC10,
-                              results = SSJaccards)
+  results <- GetJaccards(rawout = rawout,
+                         cutoff = haplotypedata$Gen10_AFC10,
+                         results = results)
   system("rm ./output/polygenic.csv")
+  return(results)
 }
-
+rownames(SSJaccards) <- c("Gen6", "Gen10")
 ###########################
 ## Directional Epistasis ##
 ###########################
@@ -152,16 +157,14 @@ for(i in 1:iter){
 # rhat <- sum(ABC_SLiM$weights * ABC_SLiM$param[,2])
 # bhat <- sum(ABC_SLiM$weights * ABC_SLiM$param[,3]) * 100
 shat <- 0.1
-rhat <- -15
-bhat <- -0.3
+rhat <- -75
+bhat <- -0.41
 
-DirectionalJaccards <- list("Gen6" = c(),
-                            "Gen10" = c())
-for(i in 1:iter){
+DirectionalJaccards <- foreach(i = 1:iter, .options.multicore=opts, .combine = 'cbind') %dopar%{
+  results <- array(dim = c(2,1))
   system(paste("slim -d seed=", seeds[i],
                " -d npops=", npops,
                " -d nloci=", nloci,
-               " -d RR=",RR,
                " -d popsize=", popsize,
                " -d " ,'"', 'fitnessFunction=', "'", 'directional', "'", '"',
                " -d fmin=", fmin,
@@ -182,30 +185,29 @@ for(i in 1:iter){
                                             "_r=", rhat,
                                             "_b=", bhat, ".csv", sep = "")))
   rawout <- rawout[,-ncol(rawout)]
-  DirectionalJaccards <- GetJaccards(rawout = rawout,
-                            cutoff = haplotypedata$Gen10_AFC10,
-                            results = DirectionalJaccards)
-  
+  results <- GetJaccards(rawout = rawout,
+                         cutoff = haplotypedata$Gen10_AFC10,
+                         results = results)
   system(paste("rm ./output/directional",
                "_seed=", seeds[i],
                "_s=", shat,
                "_r=", rhat,
                "_b=", bhat, ".csv", sep = ''))
+  return(results)
 }
+rownames(DirectionalJaccards) <- c("Gen6", "Gen10")
 ###################################
 ## Diminishing Returns Epistasis ##
 ###################################
 
-ahat <- 10
-bhat <- -0.25
+ahat <- 40
+bhat <- -0.395
 
-DimRetJaccards <- list("Gen6" = c(),
-                       "Gen10" = c())
-for(i in 1:iter){
+DimRetJaccards <- foreach(i = 1:iter, .options.multicore=opts, .combine = 'cbind') %dopar%{
+  results <- array(dim = c(2,1))
   system(paste("slim -d seed=", seeds[2 * iter + i],
                " -d npops=", npops,
                " -d nloci=", nloci,
-               " -d RR=",RR,
                " -d popsize=", popsize,
                " -d " ,'"', 'fitnessFunction=', "'", 'diminishingReturns', "'", '"',
                " -d fmin=", fmin,
@@ -223,30 +225,27 @@ for(i in 1:iter){
                                             "_a=", ahat,
                                             "_b=", bhat, ".csv", sep = "")))
   rawout <- rawout[,-ncol(rawout)]
-  DimRetJaccards <- GetJaccards(rawout = rawout,
-                                     cutoff = haplotypedata$Gen10_AFC10,
-                                     results = DimRetJaccards)
+  results <- GetJaccards(rawout = rawout,
+                         cutoff = haplotypedata$Gen10_AFC10,
+                         results = results)
   system(paste("rm ./output/diminishingReturns",
                "_seed=", seeds[2 * iter + i],
                "_a=", ahat,
                "_b=", bhat, ".csv", sep = ''))
+  return(results)
 }
-
-
+rownames(DimRetJaccards) <- c("Gen6", "Gen10")
 ###########################
 ## Stabilizing Epistasis ##
 ###########################
+mu <- 0.435
+std <- 0.0175
 
-mu <- 0.4
-std <- 0.07
-
-StabJaccards <- list("Gen6" = c(),
-                       "Gen10" = c())
-for(i in 1:iter){
+StabJaccards <-  foreach(i = 1:iter, .options.multicore=opts, .combine = 'cbind') %dopar%{
+  results <- array(dim = c(2,1))
   system(paste("slim -d seed=", seeds[2 * iter + i],
                " -d npops=", npops,
                " -d nloci=", nloci,
-               " -d RR=",RR,
                " -d popsize=", popsize,
                " -d " ,'"', 'fitnessFunction=', "'", 'stabilizing', "'", '"',
                " -d mu=", mu,
@@ -262,16 +261,16 @@ for(i in 1:iter){
                                             "_mu=", mu,
                                             "_std=", std, ".csv", sep = "")))
   rawout <- rawout[,-ncol(rawout)]
-  StabJaccards <- GetJaccards(rawout = rawout,
-                                cutoff = haplotypedata$Gen10_AFC10,
-                                results = StabJaccards)
+  results <- GetJaccards(rawout = rawout,
+                         cutoff = haplotypedata$Gen10_AFC10,
+                         results = results)
   system(paste("rm ./output/stabilizing",
                "_seed=", seeds[2 * iter + i],
                "_mu=", mu,
                "_std=", std, ".csv", sep = ''))
+  return(results)
 }
-
-
+rownames(StabJaccards) <- c("Gen6", "Gen10")
 ################################################
 if(scales == 1 | scaleT0 == 1){
   DimRetJaccards$Gen6 <- rep(0.0, times = 45)
@@ -303,18 +302,18 @@ Jaccards <- c(hap_blocks.jaccard.sim10.RDS[[1]],
               StabJaccards$Gen6,
               StabJaccards$Gen10)
 data <- data.frame(treatment, generation, Jaccards)
-
+save.image(file = "fourkrun.RData")
 # png(filename = "EmpericalBoth.png", width = 1800, height = 1000)
-ggplot(data, aes(y=Jaccards, x=as.factor(treatment))) + 
-  geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
-  theme_grey() + 
-  theme(text=element_text(family="sans", face="plain", color="#000000", size=12, hjust=0.5, vjust=0.5)) + 
-  guides(fill=guide_legend(title="generation")) + 
-  ggtitle("Pairwise Similarity in Allele Frequency Shifts") + 
-  xlab("Fitness Function") + 
-  ylab("Jaccard Score") + 
-  ylim(0,1) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+# ggplot(data, aes(y=Jaccards, x=as.factor(treatment))) + 
+#   geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
+#   theme_grey() + 
+#   theme(text=element_text(family="sans", face="plain", color="#000000", size=12, hjust=0.5, vjust=0.5)) + 
+#   guides(fill=guide_legend(title="generation")) + 
+#   ggtitle("Pairwise Similarity in Allele Frequency Shifts") + 
+#   xlab("Fitness Function") + 
+#   ylab("Jaccard Score") + 
+#   ylim(0,1) +
+#   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 # dev.off()
 
 # ggraptR(data)
