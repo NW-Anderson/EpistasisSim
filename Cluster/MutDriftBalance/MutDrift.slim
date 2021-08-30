@@ -152,7 +152,8 @@ function (numeric)LoadRecomMap(void) {
 ////////////////////////////
 
 function (void)GetCov(void) {
-	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/sortedsnpdata.csv");
+//	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/sortedsnpdata.csv");
+	lines = readFile("./sortedsnpdata.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	cov = c();
 	for (line in lines[1:(length(lines) - 1)]){

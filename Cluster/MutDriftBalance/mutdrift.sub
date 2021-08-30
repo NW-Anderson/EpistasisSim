@@ -1,7 +1,7 @@
 universe = vanilla
 log = logs/MutDrift_$(Cluster).log
 
-executable = MutDrift.sh
+executable = mutdrift.sh
 arguments = $(seed) $(fitnessFunction) $(a) $(s) $(r) $(b) $(mu) $(std)
 output = outs/MutDrift_$(Cluster)_$(Process).out
 error = errs/MutDrift_$(Cluster)_$(Process).err
