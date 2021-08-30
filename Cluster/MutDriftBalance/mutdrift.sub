@@ -1,0 +1,17 @@
+universe = vanilla
+log = logs/MutDrift_$(Cluster).log
+
+executable = MutDrift.sh
+arguments = $(seed) $(fitnessFunction) $(a) $(s) $(r) $(b) $(mu) $(std)
+output = outs/MutDrift_$(Cluster)_$(Process).out
+error = errs/MutDrift_$(Cluster)_$(Process).err
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files = slimbuild.tar.gz, MutDrift.slim, RecomMap.csv, sortedsnpdata.csv, mutdriftinfo.csv
+
+request_cpus = 1
+request_memory = 2GB
+request_disk = 2GB
+
+queue seed,fitnessFunction,a,s,r,b,mu,std from mutdrift.txt

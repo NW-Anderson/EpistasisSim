@@ -58,8 +58,8 @@ function (void)SetUpStartingPops(void) {
 
 function (void)ReadLog(void) {
 	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/selected_snps.info.txt");
-//	lines = readFile("./mutdriftinfo.csv");
-	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/mutdriftinfo.csv");
+	lines = readFile("./mutdriftinfo.csv");
+//	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/mutdriftinfo.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	T0 = c();
 	selcoef = c();
@@ -138,8 +138,8 @@ function (void)GetFits(void) {
 ////////////////////////////
 
 function (numeric)LoadRecomMap(void) {
-	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/RecomMap.csv");
-//	lines = readFile("./RecomMap.csv");
+//	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/RecomMap.csv");
+	lines = readFile("./RecomMap.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	Rf =c();
 	for (line in lines[1:(length(lines) - 1)]){
