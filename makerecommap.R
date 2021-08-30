@@ -1,11 +1,15 @@
 library(data.table)
 setwd("~/Documents/GitHub/EpistasisSim")
 x <- fread(file = "haplotype_blocks.snp_res.csv")
+y <- readRDS("hap_block_snps.neutral_AFC_cutoffs.RDS")
 
-sorteddata <- data.frame()
-for(haps in unique(x$haplotype_block)){
-  hapdata <- x[x$haplotype_block == haps]
-  sorteddata <- rbind(sorteddata,hapdata[order(hapdata$pos),])
+tmpdata <- cbind(x$chr, x$pos, x$haplotype_block, y$T0, x$selCoef, x$cov, y$Gen10_neutAFC99, y$Gen10_neutAFC999)
+tmpdata <- data.frame(tmpdata)
+colnames(tmpdata) <- c("chr", 'pos', 'haplotype_block', 'y$T0', 'selCoef', 'cov', 'Gen10_neutAFC99', 'Gen10_neutAFC999')
+sorteddata <- c()
+for(haps in unique(tmpdata$haplotype_block)){
+  hapdata <- tmpdata[which(tmpdata$haplotype_block == haps),]
+  sorteddata <- rbind(sorteddata,hapdata[order(as.integer(hapdata$pos)),])
 }
 
 
@@ -14,7 +18,7 @@ RF.bp <- 0.016 / 1e6
 
 RecomFractions <- c()
 for(i in unique(sorteddata$haplotype_block)){
-  pos <- sorteddata$pos[sorteddata$haplotype_block == i]
+  pos <- as.numeric(sorteddata$pos[sorteddata$haplotype_block == i])
   if(min(diff(pos)) < 0) stop()
   RF <- RF.bp * diff(pos)
   RecomFractions <- c(RecomFractions, RF, 0.5)

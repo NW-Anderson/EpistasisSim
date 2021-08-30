@@ -58,7 +58,7 @@ function (void)SetUpStartingPops(void) {
 
 function (void)ReadLog(void) {
 	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/selected_snps.info.txt");
-	lines = readFile("~/Documents/GitHub/EpistasisSim/sortedsnpdata.csv");
+	lines = readFile("./sortedsnpdata.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	chr = c();
 	pos = c();
@@ -94,21 +94,21 @@ function (void)GetFits(void) {
 	polygenicscore = inds.sumOfMutationsOfType(m1);
 	polygenicscore = polygenicscore / maxpolygenicscore;
 	
-	if(fitnessFunction == "directional") {
+	if(fitnessFunction == "directional" | fitnessFunction == 3) {
 		inds.fitnessScaling = fmin + ((fmax - fmin) / ((1 + s * exp(r *	(polygenicscore + b))) ^(1/s)));
 	}
 	
-	if(fitnessFunction == "diminishingReturns") {
+	if(fitnessFunction == "diminishingReturns" | fitnessFunction == 4) {
 		tmp = fmin + (fmax - fmin) * (1 - 1 / exp(a * (polygenicscore + b)));
 		tmp[tmp < 0.0] = 0.0;
 		inds.fitnessScaling = tmp;
 	}
 	
-	if(fitnessFunction == "exponential") {
+	if(fitnessFunction == "exponential" | fitnessFunction == 1) {
 		inds.fitnessScaling = exp(a * (polygenicscore)^2);
 	}
 	
-	if(fitnessFunction == "stabilizing") {
+	if(fitnessFunction == "stabilizing" | fitnessFunction == 5) {
 		inds.fitnessScaling = exp(-0.5 * ((polygenicscore - mu)^2 / std ^ 2));
 	}
 	
@@ -119,9 +119,9 @@ function (void)GetFits(void) {
 		fitarray[0,] = inds.fitnessScaling;
 		sim.setValue("pgsarray", pgsarray);
 		sim.setValue('fitarray', fitarray);
-		catn("Gen0:");
-		catn(quantile(polygenicscore, c(0.025,0.975)));
-		catn(quantile(polygenicscore));
+//		catn("Gen0:");
+//		catn(quantile(polygenicscore, c(0.025,0.975)));
+//		catn(quantile(polygenicscore));
 	}
 	if(sim.generation == 7) {
 		pgsarray = sim.getValue("pgsarray");
@@ -139,16 +139,16 @@ function (void)GetFits(void) {
 		fitarray[2,] = inds.fitnessScaling;
 		sim.setValue("pgsarray", pgsarray);
 		sim.setValue('fitarray', fitarray);
-		catn("Gen10:");
-		catn(quantile(polygenicscore, c(0.025,0.975)));
-		catn(quantile(polygenicscore));
+//		catn("Gen10:");
+//		catn(quantile(polygenicscore, c(0.025,0.975)));
+//		catn(quantile(polygenicscore));
 	}
 }
 
 ////////////////////////////
 
 function (numeric)LoadRecomMap(void) {
-	lines = readFile("~/Documents/GitHub/EpistasisSim/RecomMap.csv");
+	lines = readFile("./RecomMap.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	Rf =c();
 	for (line in lines[1:(length(lines) - 1)]){
@@ -164,20 +164,20 @@ function (void)MakePlot(void) {
 	pgsarray = sim.getValue("pgsarray");
 	fitarray = sim.getValue('fitarray');
 	x = 0:200 / 200;
-	if(fitnessFunction == "directional") {
+	if(fitnessFunction == "directional" | fitnessFunction == 3) {
 		y = fmin + ((fmax - fmin) / ((1 + s * exp(r *	(x + b))) ^(1/s)));
 	}
 	
-	if(fitnessFunction == "diminishingReturns") {
+	if(fitnessFunction == "diminishingReturns" | fitnessFunction == 4) {
 		y = fmin + (fmax - fmin) * (1 - 1 / exp(a * (x + b)));
 		y[y < 0.0] = 0.0;
 	}
 	
-	if(fitnessFunction == "exponential") {
+	if(fitnessFunction == "exponential"  | fitnessFunction == 1) {
 		y = exp(a * (x^2));
 	}
 	
-	if(fitnessFunction == "stabilizing") {
+	if(fitnessFunction == "stabilizing" | fitnessFunction == 5) {
 		y = exp(-0.5 * ((x - mu)^2 / std ^ 2));
 	}
 	
@@ -212,19 +212,19 @@ function (void)MakePlot(void) {
 }
 
 initialize() {
-//	setSeed(seed);
-	defineGlobal("npops",10);
-	defineGlobal("nloci", 4977);
-	defineGlobal("popsize", 1750);
-	defineGlobal("fitnessFunction", "exponential");
-	defineGlobal("fmin",0);
-	defineGlobal("fmax",1);
-	defineGlobal("s",0.1);
-	defineGlobal("r",-75);
-	defineGlobal("a",8);
-	defineGlobal("b", -0.395);
-	defineGlobal("mu", 0.435);
-	defineGlobal("std", 0.0175);
+	setSeed(seed);
+//	defineGlobal("npops",10);
+//	defineGlobal("nloci", 4977);
+//	defineGlobal("popsize", 1750);
+//	defineGlobal("fitnessFunction", "exponential");
+//	defineGlobal("fmin",0);
+//	defineGlobal("fmax",1);
+//	defineGlobal("s",0.1);
+//	defineGlobal("r",-75);
+//	defineGlobal("a",8);
+//	defineGlobal("b", -0.395);
+//	defineGlobal("mu", 0.435);
+//	defineGlobal("std", 0.0175);
 	
 	initializeMutationRate(0);
 	
@@ -237,19 +237,20 @@ initialize() {
 	initializeRecombinationRate(LoadRecomMap(), 1:(nloci-1));
 	
 	// initializing a path to R for running liveplotting	
-	if (fileExists("/usr/bin/Rscript"))
-		defineConstant("RSCRIPT", "/usr/bin/Rscript");
-	else if (fileExists("/usr/local/bin/Rscript"))
-		defineConstant("RSCRIPT", "/usr/local/bin/Rscript");
-	else
-		stop("Couldn't find Rscript.");
+//	if (fileExists("/usr/bin/Rscript"))
+//		defineConstant("RSCRIPT", "/usr/bin/Rscript");
+//	else if (fileExists("/usr/local/bin/Rscript"))
+//		defineConstant("RSCRIPT", "/usr/local/bin/Rscript");
+//	else
+//		stop("Couldn't find Rscript.");
 }
 
 
 
 
 fitness(m1) {
-	if(fitnessFunction == "diminishingReturns" | fitnessFunction == "directional" | fitnessFunction == "stabilizing") {
+	if(fitnessFunction == "diminishingReturns" | fitnessFunction == "directional" | fitnessFunction == "stabilizing" | 
+	fitnessFunction == 3 | fitnessFunction == 4 | fitnessFunction == 5) {
 		return 1.0;
 	} else {
 		return relFitness;
