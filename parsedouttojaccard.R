@@ -62,7 +62,7 @@ for(ff in FFs){
     return(GetJaccards(rawout = rawout, cutoffs = empdata$Gen10_neutAFC999))
   }
   if(ff == "positive"){sim.results[3:1002, 1:2] <- meanjaccs}
-  if(ff == "negative"){sim.results[2:1002, 3:4] <- meanjaccs}
+  if(ff == "negative"){sim.results[3:1002, 3:4] <- meanjaccs}
   if(ff == "multiplicative"){sim.results[3:1002, 5:6] <- meanjaccs}
   if(ff == "directional"){sim.results[3:1002, 7:8] <- meanjaccs}
   if(ff == "diminishingReturns"){sim.results[3:1002, 9:10] <- meanjaccs}
