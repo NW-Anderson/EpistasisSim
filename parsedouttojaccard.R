@@ -37,7 +37,7 @@ library(foreach)
 library(ggraptR)
 library(data.table)
 opts <- list(preschedule = FALSE)
-registerDoMC(5)
+registerDoMC(8)
 setwd("/media/lee/HDD_Array/nwanderson/EpistasisSim/jacccalc/")
 # setwd("~/Documents/GitHub/EpistasisSim")
 empdata <- fread(file = "sortedsnpdata.csv")
@@ -59,7 +59,7 @@ for(ff in FFs){
     path <- paste("./SLiMouts/", ff, "/", sim, sep = '')
     rawout <- read.csv(file = path)
     rawout <- rawout[,-ncol(rawout)]
-    return(GetJaccards(rawout = rawout, cutoffs = empdata$Gen10_neutAFC999))
+    return(GetJaccards(rawout = rawout, cutoffs = empdata$Gen10_neutAFC99))
   }
   if(ff == "positive"){sim.results[3:1002, 1:2] <- meanjaccs}
   if(ff == "negative"){sim.results[3:1002, 3:4] <- meanjaccs}
