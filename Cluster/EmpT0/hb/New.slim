@@ -57,9 +57,9 @@ function (void)SetUpStartingPops(void) {
 ////////////////////////////
 
 function (void)ReadLog(void) {
-	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/EmpT0hb/sortedhbdata.csv");
+//	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/EmpT0hb/sortedhbdata.csv");
 	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/EmpT0snps/selected_snps.info.txt");
-	//	lines = readFile("./sortedsnpdata.csv");
+	lines = readFile("./sortedhbdata.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	chr = c();
 //	pos = c();
