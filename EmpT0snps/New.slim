@@ -28,9 +28,11 @@ function (void)SaveVals(void) {
 	if(gen == 11) mult = 2;
 	
 	for(pop in 0:(npops-1)) {
-		indsample = sim.subpopulations[pop].individuals[sample(0:(popsize - 1), 100)];
+//		indsample = sim.subpopulations[pop].individuals[sample(0:(popsize - 1), 100)];
+		indsample = sim.subpopulations[pop].individuals;
 		for(pos in 0:(nloci-1)) {
-			covsample = indsample.genomes[sample(0:199, cov[pos])];
+//			covsample = indsample.genomes[sample(0:199, cov[pos])];
+			covsample = indsample.genomes;
 			results[(mult * npops + pop),(pos + 2)] = sum(covsample.mutations.position == pos) / cov[pos];
 		}
 	}
