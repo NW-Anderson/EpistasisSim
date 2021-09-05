@@ -215,19 +215,19 @@ function (void)MakePlot(void) {
 }
 
 initialize() {
-	//	setSeed(seed);
-	defineGlobal("npops",10);
-	defineGlobal("nloci", 121);
-	defineGlobal("popsize", 1750);
-	defineGlobal("fitnessFunction", "diminishingReturns");
-	defineGlobal("fmin",0);
-	defineGlobal("fmax",1);
-	defineGlobal("s",0.1);
-	defineGlobal("r",-15);
-	defineGlobal("a",10);
-	defineGlobal("b", -0.25);
-	defineGlobal("mu", 0.435);
-	defineGlobal("std", 0.0175);
+	setSeed(seed);
+//	defineGlobal("npops",10);
+//	defineGlobal("nloci", 121);
+//	defineGlobal("popsize", 1750);
+//	defineGlobal("fitnessFunction", "diminishingReturns");
+//	defineGlobal("fmin",0);
+//	defineGlobal("fmax",1);
+//	defineGlobal("s",0.1);
+//	defineGlobal("r",-15);
+//	defineGlobal("a",10);
+//	defineGlobal("b", -0.25);
+//	defineGlobal("mu", 0.435);
+//	defineGlobal("std", 0.0175);
 	
 	initializeMutationRate(0);
 	
@@ -241,13 +241,13 @@ initialize() {
 	initializeRecombinationRate(0.5);
 	
 	//	initializing a path to R for running liveplotting	
-	if (fileExists("/usr/bin/Rscript")){
-		defineConstant("RSCRIPT", "/usr/bin/Rscript");
-	}else if (fileExists("/usr/local/bin/Rscript")){
-		defineConstant("RSCRIPT", "/usr/local/bin/Rscript");
-	}else{
-		stop("Couldn't find Rscript.");
-	}
+//	if (fileExists("/usr/bin/Rscript")){
+//		defineConstant("RSCRIPT", "/usr/bin/Rscript");
+//	}else if (fileExists("/usr/local/bin/Rscript")){
+//		defineConstant("RSCRIPT", "/usr/local/bin/Rscript");
+//	}else{
+//		stop("Couldn't find Rscript.");
+//	}
 }
 
 
@@ -307,6 +307,6 @@ fitness(m1) {
 
 11 late() {
 	SaveVals();
-	MakePlot();
+//	MakePlot();
 	MakeOutput();
 }
