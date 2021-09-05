@@ -59,7 +59,7 @@ function (void)SetUpStartingPops(void) {
 
 function (void)ReadLog(void) {
 	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/selected_snps.info.txt");
-//	lines = readFile("./mutdriftinfo.csv");
+	//	lines = readFile("./mutdriftinfo.csv");
 	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/MutDrifthb/mutdriftinfo.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	T0 = c();
@@ -82,7 +82,7 @@ function (void)ReadLog(void) {
 
 function (void)GetCov(void) {
 	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/MutDrifthb/sortedhbdata.csv");
-//	lines = readFile("./sortedsnpdata.csv");
+	//	lines = readFile("./sortedsnpdata.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	cov = c();
 	for (line in lines[1:(length(lines) - 1)]){
@@ -101,22 +101,29 @@ function (void)GetFits(void) {
 	polygenicscore = inds.sumOfMutationsOfType(m1);
 	polygenicscore = polygenicscore / maxpolygenicscore;
 	
+	if(sim.generation == 1){
+		horshift = mean(polygenicscore) - 0.27337;
+		sim.setValue("horshift",horshift);
+	}else{
+		horshift = sim.getValue("horshift");
+	}
+	
 	if(fitnessFunction == "directional" | fitnessFunction == 3) {
-		inds.fitnessScaling = fmin + ((fmax - fmin) / ((1 + s * exp(r *	(polygenicscore + b))) ^(1/s)));
+		inds.fitnessScaling = fmin + ((fmax - fmin) / ((1 + s * exp(r *	((polygenicscore - horshift) + b))) ^(1/s)));
 	}
 	
 	if(fitnessFunction == "diminishingReturns" | fitnessFunction == 4) {
-		tmp = fmin + (fmax - fmin) * (1 - 1 / exp(a * (polygenicscore + b)));
+		tmp = fmin + (fmax - fmin) * (1 - 1 / exp(a * ((polygenicscore - horshift) + b)));
 		tmp[tmp < 0.0] = 0.0;
 		inds.fitnessScaling = tmp;
 	}
 	
 	if(fitnessFunction == "exponential" | fitnessFunction == 1) {
-		inds.fitnessScaling = exp(a * (polygenicscore)^2);
+		inds.fitnessScaling = exp(a * ((polygenicscore - horshift))^2);
 	}
 	
 	if(fitnessFunction == "stabilizing" | fitnessFunction == 5) {
-		inds.fitnessScaling = exp(-0.5 * ((polygenicscore - mu)^2 / std ^ 2));
+		inds.fitnessScaling = exp(-0.5 * (((polygenicscore - horshift) - mu)^2 / std ^ 2));
 	}
 	
 	if(sim.generation == 1) {
@@ -126,9 +133,9 @@ function (void)GetFits(void) {
 		fitarray[0,] = inds.fitnessScaling;
 		sim.setValue("pgsarray", pgsarray);
 		sim.setValue('fitarray', fitarray);
-		//		catn("Gen0:");
-		//		catn(quantile(polygenicscore, c(0.025,0.975)));
-		//		catn(quantile(polygenicscore));
+		catn("Gen0:");
+		catn(quantile(polygenicscore, c(0.025,0.975)));
+		catn(quantile(polygenicscore));
 	}
 	if(sim.generation == 7) {
 		pgsarray = sim.getValue("pgsarray");
@@ -146,9 +153,9 @@ function (void)GetFits(void) {
 		fitarray[2,] = inds.fitnessScaling;
 		sim.setValue("pgsarray", pgsarray);
 		sim.setValue('fitarray', fitarray);
-		//		catn("Gen10:");
-		//		catn(quantile(polygenicscore, c(0.025,0.975)));
-		//		catn(quantile(polygenicscore));
+		catn("Gen10:");
+		catn(quantile(polygenicscore, c(0.025,0.975)));
+		catn(quantile(polygenicscore));
 	}
 }
 
@@ -158,21 +165,22 @@ function (void)MakePlot(void) {
 	pgsarray = sim.getValue("pgsarray");
 	fitarray = sim.getValue('fitarray');
 	x = 0:200 / 200;
+	horshift = sim.getValue("horshift");
 	if(fitnessFunction == "directional" | fitnessFunction == 3) {
-		y = fmin + ((fmax - fmin) / ((1 + s * exp(r *	(x + b))) ^(1/s)));
+		y = fmin + ((fmax - fmin) / ((1 + s * exp(r *	((x - horshift) + b))) ^(1/s)));
 	}
 	
 	if(fitnessFunction == "diminishingReturns" | fitnessFunction == 4) {
-		y = fmin + (fmax - fmin) * (1 - 1 / exp(a * (x + b)));
+		y = fmin + (fmax - fmin) * (1 - 1 / exp(a * ((x - horshift) + b)));
 		y[y < 0.0] = 0.0;
 	}
 	
 	if(fitnessFunction == "exponential"  | fitnessFunction == 1) {
-		y = exp(a * (x^2));
+		y = exp(a * ((x - horshift)^2));
 	}
 	
 	if(fitnessFunction == "stabilizing" | fitnessFunction == 5) {
-		y = exp(-0.5 * ((x - mu)^2 / std ^ 2));
+		y = exp(-0.5 * (((x - horshift) - mu)^2 / std ^ 2));
 	}
 	
 	
@@ -210,13 +218,13 @@ initialize() {
 	defineGlobal("npops",10);
 	defineGlobal("nloci", 121);
 	defineGlobal("popsize", 1750);
-	defineGlobal("fitnessFunction", "exponential");
+	defineGlobal("fitnessFunction", "diminishingReturns");
 	defineGlobal("fmin",0);
 	defineGlobal("fmax",1);
 	defineGlobal("s",0.1);
-	defineGlobal("r",-75);
-	defineGlobal("a",8);
-	defineGlobal("b", -0.395);
+	defineGlobal("r",-15);
+	defineGlobal("a",10);
+	defineGlobal("b", -0.25);
 	defineGlobal("mu", 0.435);
 	defineGlobal("std", 0.0175);
 	
@@ -231,13 +239,14 @@ initialize() {
 	//	initializeRecombinationRate(LoadRecomMap(), 1:(nloci-1));
 	initializeRecombinationRate(0.5);
 	
-	// initializing a path to R for running liveplotting	
-	//	if (fileExists("/usr/bin/Rscript"))
-	//		defineConstant("RSCRIPT", "/usr/bin/Rscript");
-	//	else if (fileExists("/usr/local/bin/Rscript"))
-	//		defineConstant("RSCRIPT", "/usr/local/bin/Rscript");
-	//	else
-	//		stop("Couldn't find Rscript.");
+	//	initializing a path to R for running liveplotting	
+	if (fileExists("/usr/bin/Rscript")){
+		defineConstant("RSCRIPT", "/usr/bin/Rscript");
+	}else if (fileExists("/usr/local/bin/Rscript")){
+		defineConstant("RSCRIPT", "/usr/local/bin/Rscript");
+	}else{
+		stop("Couldn't find Rscript.");
+	}
 }
 
 
@@ -282,7 +291,7 @@ fitness(m1) {
 
 1: late() {
 	GetFits();
-	//	MakePlot();
+//	MakePlot();
 }
 
 
@@ -297,6 +306,6 @@ fitness(m1) {
 
 11 late() {
 	SaveVals();
-	//	MakePlot();
+	MakePlot();
 	MakeOutput();
 }

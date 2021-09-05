@@ -1,11 +1,11 @@
 library(data.table)
 library(ggraptR)
-setwd("~/Documents/GitHub/EpistasisSim/Empt0hb")
-empjaccs <- readRDS(file = 'hap_blocks.jaccard.neutral999.RDS')
+setwd("~/Documents/GitHub/EpistasisSim/EmpT0snps")
+empjaccs <- readRDS(file = 'hap_block_snps.jaccard.neutral999.RDS')
 tmp <- c(mean(empjaccs[[1]]), mean(empjaccs[[2]]))
 empjaccs <- tmp
 rm(tmp)
-jaccmatrix <- as.matrix(fread(file = 'sim.results.csv'))
+jaccmatrix <- as.matrix(fread(file = '../results/EmpT0/sim.results.csv'))
 jaccmatrix <- jaccmatrix[-1,-1]
 
 treatment <- c(rep(c("B. Positive Epistasis",
