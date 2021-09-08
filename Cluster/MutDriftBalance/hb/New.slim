@@ -134,9 +134,9 @@ function (void)GetFits(void) {
 		fitarray[0,] = inds.fitnessScaling;
 		sim.setValue("pgsarray", pgsarray);
 		sim.setValue('fitarray', fitarray);
-		catn("Gen0:");
-		catn(quantile(polygenicscore, c(0.025,0.975)));
-		catn(quantile(polygenicscore));
+//		catn("Gen0:");
+//		catn(quantile(polygenicscore, c(0.025,0.975)));
+//		catn(quantile(polygenicscore));
 	}
 	if(sim.generation == 7) {
 		pgsarray = sim.getValue("pgsarray");
@@ -154,9 +154,9 @@ function (void)GetFits(void) {
 		fitarray[2,] = inds.fitnessScaling;
 		sim.setValue("pgsarray", pgsarray);
 		sim.setValue('fitarray', fitarray);
-		catn("Gen10:");
-		catn(quantile(polygenicscore, c(0.025,0.975)));
-		catn(quantile(polygenicscore));
+//		catn("Gen10:");
+//		catn(quantile(polygenicscore, c(0.025,0.975)));
+//		catn(quantile(polygenicscore));
 	}
 }
 
