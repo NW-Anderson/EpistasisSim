@@ -25,4 +25,13 @@ for(i in 1:12){
 }
 jaccards <- as.numeric(c(jaccards, empjaccs))
 data <- data.frame(treatment, generation, jaccards)
-ggraptR(data)
+# ggraptR(data)
+ggplot(data, aes(y=jaccards, x=as.factor(treatment))) + 
+  geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
+  theme_grey() + 
+  theme(text=element_text(family="sans", face="plain", color="#000000", size=15, hjust=0.5, vjust=0.5)) + 
+  guides(fill=guide_legend(title="generation")) + ggtitle("4977 snps on 121 hap blocks. Empirical T0") + 
+  xlab("Fitness Function") + 
+  ylab("Jaccard Score") + 
+  ylim(c(0,1)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))

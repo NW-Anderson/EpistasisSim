@@ -60,7 +60,7 @@ function (void)SetUpStartingPops(void) {
 function (void)ReadLog(void) {
 	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/selected_snps.info.txt");
 	//	lines = readFile("./mutdriftinfo.csv");
-	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/MutDriftsnpss/mutdriftinfo.csv");
+	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/MutDriftsnps/mutdriftinfo.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	T0 = c();
 	selcoef = c();
@@ -80,8 +80,23 @@ function (void)ReadLog(void) {
 
 ////////////////////////////
 
+function (numeric)LoadRecomMap(void) {
+	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/MutDriftsnps/RecomMap.csv");
+//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/RecomMap.csv")
+//	lines = readFile("./RecomMap.csv");
+	lines = lines[substr(lines, 0, 1) != "//"];
+	Rf =c();
+	for (line in lines[1:(length(lines) - 1)]){
+		fields = strsplit(line, ",");
+		Rf = c(Rf, asFloat(fields[1]));
+	}
+	return Rf[0:(nloci-2)];
+}
+
+////////////////////////////
+
 function (void)GetCov(void) {
-	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/MutDrifthb/sortedsnpsdata.csv");
+	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/MutDriftsnps/sortedsnpdata.csv");
 	//	lines = readFile("./sortedsnpdata.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	cov = c();
@@ -236,8 +251,8 @@ initialize() {
 	
 	initializeGenomicElement(g1, 0, (nloci - 1));
 	
-	//	initializeRecombinationRate(LoadRecomMap(), 1:(nloci-1));
-	initializeRecombinationRate(0.5);
+	initializeRecombinationRate(LoadRecomMap(), 1:(nloci-1));
+//	initializeRecombinationRate(0.5);
 	
 	//	initializing a path to R for running liveplotting	
 	if (fileExists("/usr/bin/Rscript")){

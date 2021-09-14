@@ -1,0 +1,17 @@
+universe = vanilla
+log = logs/121_$(Cluster).log
+
+executable = 121.sh
+arguments = $(seed) $(fitnessFunction) $(a) $(s) $(r) $(b) $(mu) $(std) $(nloci) $(simnum)
+output = outs/121_$(Cluster)_$(Process).out
+error = errs/121_$(Cluster)_$(Process).err
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files = slimbuild.tar.gz, New.slim, sortedhbdata.csv, sampledloci.csv
+
+request_cpus = 1
+request_memory = 2GB
+request_disk = 2GB
+
+queue seed,fitnessFunction,a,s,r,b,mu,std,nloci,simnum from params.txt
