@@ -1,4 +1,5 @@
-setwd("/media/nathan/T7/EpistasisSim/nlocihb")
+# setwd("/media/nathan/T7/EpistasisSim/nlocihb")
+setwd("/Volumes/T7/EpistasisSim/nlocihb")
 
 filenames <- list.files(path = './SLiMouts/')
 parsefilenames(filenames = filenames)

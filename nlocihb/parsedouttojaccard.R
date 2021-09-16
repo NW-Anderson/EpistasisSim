@@ -29,7 +29,7 @@ GetJaccards <- function(rawout, cutoffs){
   }
   return(results)
 }
-GetCutoffs <- function(rawout, sampledloci){
+GetCutoffs <- function(rawout){
   loci <- colnames(rawout)[3:ncol(rawout)]
   loci <- substr(loci,5, nchar(loci))
   loci <- as.numeric(loci) + 1
@@ -42,14 +42,13 @@ library(doMC)
 library(stringr)
 library(foreach)
 library(ggraptR)
-library(data.table)
 opts <- list(preschedule = FALSE)
 registerDoMC(7)
-setwd("/media/lee/HDD_Array/nwanderson/EpistasisSim/jacccalc/MutDrifthb/")
+setwd("/media/lee/HDD_Array/nwanderson/EpistasisSim/jacccalc/nlocihb/")
 # setwd("~/Documents/GitHub/EpistasisSim/nlocihb/")
 empdata <- fread(file = "sortedhbdata.csv")
-sampledloci <- fread(file = "sampledloci.csv")
 # setwd("/media/nathan/T7/EpistasisSim/nlocihb/")
+# setwd("/Volumes/T7/EpistasisSim/nlocihb")
 FFs <- list.files(path = './SLiMouts/')
 sim.results <- array(dim = c(103, 2 * length(FFs) * 13))
 sim.results[1,] <- rep(c("positive",
@@ -63,19 +62,17 @@ sim.results[2,] <- rep(c(6,10), each = 1, times = 6*13)
 sim.results[3,] <- rep(c(seq(from = 10, to = 120, by = 10), 121), each = 12, times = 1)
 for(ff in FFs){
   files <- list.files(path = paste("./SLiMouts/", ff, "/", sep = ''))
-  meanjaccs <- foreach(i = 1:length(files), .options.multicore=opts, .combine = 'rbind') %dopar%{
-    sim = files[i]
-    path <- paste("./SLiMouts/", ff, "/", sim, sep = '')
-    rawout <- read.csv(file = path)
-    rawout <- rawout[,-ncol(rawout)]
-    cutoffs <- GetCutoffs(rawout = rawout, sampledloci = sampledloci)
-    return(GetJaccards(rawout = rawout, cutoffs = cutoffs))
+  splt <- do.call(rbind, strsplit(files, "_"))
+  for(nloci in c(seq(from = 10, to = 120, by = 10), 121)){
+    nlocisims <- which(splt[,9] == paste("nloci=", nloci, sep = ""))
+    meanjaccs <- foreach(sim = files[nlocisims], .options.multicore=opts, .combine = 'rbind') %dopar%{
+      path <- paste("./SLiMouts/", ff, "/", sim, sep = '')
+      rawout <- read.csv(file = path)
+      rawout <- rawout[,-ncol(rawout)]
+      cutoffs <- GetCutoffs(rawout = rawout)
+      return(GetJaccards(rawout = rawout, cutoffs = cutoffs))
+    }
+    sim.results[4:103, which(sim.results[1,] == ff & sim.results[3,] == nloci)] <- meanjaccs
   }
-  if(ff == "positive"){sim.results[3:1002, 1:2] <- meanjaccs}
-  if(ff == "negative"){sim.results[3:1002, 3:4] <- meanjaccs}
-  if(ff == "multiplicative"){sim.results[3:1002, 5:6] <- meanjaccs}
-  if(ff == "directional"){sim.results[3:1002, 7:8] <- meanjaccs}
-  if(ff == "diminishingReturns"){sim.results[3:1002, 9:10] <- meanjaccs}
-  if(ff == "stabilizing"){sim.results[3:1002, 11:12] <- meanjaccs}
 }
 write.csv(sim.results, file = "sim.results.csv")
