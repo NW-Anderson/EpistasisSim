@@ -17,7 +17,7 @@ r <- rep(c(0,0,0,-75,0,0), each = 1300)
 b <- rep(c(0,0,0,-0.41,-0.395,0), each = 1300)
 mu <- rep(c(0,0,0,0,0,0.435), each = 1300)
 std <- rep(c(0,0,0,0,0,0.0175), each = 1300)
-nloci <- rep(c(seq(from = 10, to = 120, by = 10), 121), each = 100, times = 6)
+nloci <- rep(c(round(seq(from = 10, to = 4970, length.out = 12)), 4977), each = 100, times = 6)
 sim <- 0:(7800-1)
 
 

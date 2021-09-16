@@ -39,6 +39,20 @@ function (void)SaveVals(void) {
 	sim.setValue("results", results);
 }
 
+////////////////////////////
+
+function (numeric)LoadRecomMap(void) {
+	lines = readFile("/Users/nathan/Documents/GitHub/EpistasisSim/nlocisnps/RecomMap.csv");
+	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/RecomMap.csv")
+	//	lines = readFile("./RecomMap.csv");
+	lines = lines[substr(lines, 0, 1) != "//"];
+	line = lines[simnum];
+	fields = strsplit(line, ",");
+	fields = fields[fields != "NA"];
+	fields = fields[1:(length(fields)-1)];
+	return asFloat(fields);
+}
+
 
 ////////////////////////////
 
@@ -46,7 +60,7 @@ function (void)SetUpStartingPops(void) {
 	T0 = sim.getValue("T0");
 	selcoef = sim.getValue("selcoef");
 	sampledloci = sim.getValue("sampledloci");
-		
+	
 	
 	genomes = sim.subpopulations.genomes;
 	for(pos in 0:(nloci-1)){
@@ -60,12 +74,12 @@ function (void)SetUpStartingPops(void) {
 ////////////////////////////
 
 function (void)ReadLog(void) {
-	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/nlocihb/sortedhbdata.csv");
+	lines = readFile("/Users/nathan/Documents/GitHub/EpistasisSim/nlocisnps/sortedsnpdata.csv");
 	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/EmpT0snps/selected_snps.info.txt");
 	//	lines = readFile("./sortedsnpdata.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	chr = c();
-//	pos = c();
+	//	pos = c();
 	haplotype_block= c();
 	T0= c();
 	selcoef = c();
@@ -74,15 +88,15 @@ function (void)ReadLog(void) {
 		fields = strsplit(line, ",");
 		
 		chr = c(chr, fields[1]);
-//		pos = c(pos, asInteger(fields[2]));
-		haplotype_block = c(haplotype_block, fields[4]);
-		T0 = c(T0, asFloat(fields[5]));
-		selcoef = c(selcoef, asFloat(fields[6]));
-		cov = c(cov, asInteger(fields[7]));
+		//		pos = c(pos, asInteger(fields[2]));
+		haplotype_block = c(haplotype_block, fields[3]);
+		T0 = c(T0, asFloat(fields[4]));
+		selcoef = c(selcoef, asFloat(fields[5]));
+		cov = c(cov, asInteger(fields[6]));
 	}
 	selcoef = abs(selcoef);
 	sim.setValue("chr",chr);
-//	sim.setValue("pos",pos);
+	//	sim.setValue("pos",pos);
 	sim.setValue("haplotype_block",haplotype_block);
 	sim.setValue("T0", T0);
 	sim.setValue("selcoef", selcoef);
@@ -129,9 +143,9 @@ function (void)GetFits(void) {
 		fitarray[0,] = inds.fitnessScaling;
 		sim.setValue("pgsarray", pgsarray);
 		sim.setValue('fitarray', fitarray);
-		catn("Gen0:");
-		catn(quantile(polygenicscore, c(0.025,0.975)));
-		catn(quantile(polygenicscore));
+//		catn("Gen0:");
+//		catn(quantile(polygenicscore, c(0.025,0.975)));
+//		catn(quantile(polygenicscore));
 	}
 	if(sim.generation == 7) {
 		pgsarray = sim.getValue("pgsarray");
@@ -149,18 +163,18 @@ function (void)GetFits(void) {
 		fitarray[2,] = inds.fitnessScaling;
 		sim.setValue("pgsarray", pgsarray);
 		sim.setValue('fitarray', fitarray);
-		catn("Gen10:");
-		catn(quantile(polygenicscore, c(0.025,0.975)));
-		catn(quantile(polygenicscore));
+//		catn("Gen10:");
+//		catn(quantile(polygenicscore, c(0.025,0.975)));
+//		catn(quantile(polygenicscore));
 	}
 }
 
 ////////////////////////////
 
 function (void)Readsnps(void){
-	lines = readFile("/home/nathan/Documents/GitHub/EpistasisSim/nlocihb/sampledloci.csv");
-//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/RecomMap.csv")
-//	lines = readFile("./RecomMap.csv");
+	lines = readFile("/Users/nathan/Documents/GitHub/EpistasisSim/nlocisnps/sampledloci.csv");
+	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/RecomMap.csv")
+	//	lines = readFile("./RecomMap.csv");
 	lines = lines[substr(lines, 0, 1) != "//"];
 	Rf =c();
 	line = lines[simnum];
@@ -253,8 +267,8 @@ initialize() {
 	
 	initializeGenomicElement(g1, 0, (nloci - 1));
 	
-//	initializeRecombinationRate(LoadRecomMap(), 1:(nloci-1));
-	initializeRecombinationRate(0.5);
+	initializeRecombinationRate(LoadRecomMap(), 1:(nloci-1));
+	//	initializeRecombinationRate(0.5);
 	
 	//	initializing a path to R for running liveplotting	
 	if (fileExists("/usr/bin/Rscript")){
@@ -308,7 +322,7 @@ fitness(m1) {
 
 1: late() {
 	GetFits();
-//	MakePlot();
+	//	MakePlot();
 }
 
 

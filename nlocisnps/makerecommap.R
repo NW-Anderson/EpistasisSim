@@ -1,6 +1,6 @@
 library(data.table)
-setwd("~/Documents/GitHub/EpistasisSim/EmpT0snps/")
-x <- fread(file = "haplotype_blocks.snp_res.csv")
+setwd("~/Documents/GitHub/EpistasisSim/nlocisnps/")
+x <- readRDS(file = "haplotype_blocks.snp_res.RDS")
 y <- readRDS("hap_block_snps.neutral_AFC_cutoffs.RDS")
 
 tmpdata <- cbind(x$chr, x$pos, x$haplotype_block, y$T0, x$selCoef, x$cov, y$Gen10_neutAFC99, y$Gen10_neutAFC999)
@@ -21,14 +21,23 @@ for(haps in unique(tmpdata$haplotype_block)){
 
 
 RF.bp <- 0.016 / 1e6
+sampledloci <- fread(file = "sampledloci.csv")
 
-RecomFractions <- c()
-for(i in unique(sorteddata$haplotype_block)){
-  pos <- as.numeric(sorteddata$pos[sorteddata$haplotype_block == i])
-  if(min(diff(pos)) < 0) stop()
-  RF <- RF.bp * diff(pos)
-  RecomFractions <- c(RecomFractions, RF, 0.5)
+RecomFractions <- array(dim = c(7800,4977))
+for(sim in 1:nrow(sampledloci)){
+  simloci <- sort(na.omit(unlist(sampledloci[sim,])))
+  simloci <- sorteddata[simloci,]
+  simrecommap <- c()
+  for(i in unique(simloci$haplotype_block)){
+    pos <- as.numeric(simloci$pos[simloci$haplotype_block == i])
+    if(min(diff(pos)) < 0) stop()
+    RF <- RF.bp * diff(pos)
+    simrecommap <- c(simrecommap, RF, 0.5)
+  }
+  simrecommap <- simrecommap[-length(simrecommap)]
+  RecomFractions[sim,1:length(simrecommap)] <- simrecommap
 }
-RecomFractions <- RecomFractions[-length(RecomFractions)]
+
 # write.csv(sorteddata, file = 'sortedsnpdata.csv')
-# write.csv(RecomFractions, file = 'RecomMap.csv')
+# fwrite(RecomFractions, file = "RecomMap.csv", col.names = F)
+write.table(RecomFractions, file = "RecomMap.csv", sep = ",", col.names = F)
