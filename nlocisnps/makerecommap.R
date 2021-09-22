@@ -25,7 +25,7 @@ sampledloci <- fread(file = "sampledloci.csv")
 
 RecomFractions <- array(dim = c(7800,4977))
 for(sim in 1:nrow(sampledloci)){
-  simloci <- sort(na.omit(unlist(sampledloci[sim,])))
+  simloci <- sort(na.omit(unlist(sampledloci[sim,])))+1
   simloci <- sorteddata[simloci,]
   simrecommap <- c()
   for(i in unique(simloci$haplotype_block)){
@@ -40,4 +40,4 @@ for(sim in 1:nrow(sampledloci)){
 
 # write.csv(sorteddata, file = 'sortedsnpdata.csv')
 # fwrite(RecomFractions, file = "RecomMap.csv", col.names = F)
-write.table(RecomFractions, file = "RecomMap.csv", sep = ",", col.names = F)
+# write.table(RecomFractions, file = "RecomMap.csv", sep = ",", col.names = F)
