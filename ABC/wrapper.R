@@ -85,7 +85,8 @@ model <- function(par){
                  "_b=", b,
                  "_mu=", mu,
                  "_std=", std,
-                 ".csv", sep = "")))[,-1159]
+                 ".csv", sep = "")))
+    rawout <- rawout[-ncol(rawout)]
     results <- vector(length = 2)
     for(i in 0:1){
       signsnps <- vector("list",10)
