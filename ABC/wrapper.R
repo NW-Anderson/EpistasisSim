@@ -2,11 +2,13 @@ library(doMC)
 library(stringr)
 library(foreach)
 library(EasyABC)
+library(data.table)
 setwd("/media/lee/HDD_Array/nwanderson/EpistasisSim/ABC")
 # setwd("~/Documents/GitHub/EpistasisSim/ABC")
 
 # opts <- list(preschedule = FALSE)
 # registerDoMC(5)
+
 #################
 ## ABC wrapper ##
 #################
@@ -50,6 +52,31 @@ model <- function(par){
   b <- par[13] * 100
   mu <- par[14]
   std <- par[15]
+  
+  cutoffs <- c(0.03628571, 0.06996693, 0.05728657, 0.06885771, 0.08735743, 
+               0.07732164, 0.08610714, 0.05750029, 0.08378586, 0.08664343, 
+               0.03192971, 0.06521457, 0.06039286, 0.06771457, 0.08325029, 
+               0.05935714, 0.07535714, 0.08007157, 0.04628629, 0.07892957, 
+               0.08807186, 0.07421429, 0.05407229, 0.07221486, 0.07200143, 
+               0.07589421, 0.07810743, 0.07525036, 0.06264329, 0.07800029, 
+               0.08628571, 0.06121429, 0.05046429, 0.07867857, 0.05942943, 
+               0.08096521, 0.05050086, 0.07657314, 0.08582179, 0.06650057, 
+               0.08685771, 0.08793, 0.06182314, 0.08428571, 0.08614343, 
+               0.07621486, 0.08246479, 0.04250057, 0.055501, 0.07707229, 
+               0.06982143, 0.06571457, 0.08121514, 0.066608, 0.08817971, 
+               0.04132171, 0.08789314, 0.07900029, 0.03942886, 0.06392914, 
+               0.08618021, 0.05592943, 0.04435771, 0.06071429, 0.07010714, 
+               0.08385857, 0.06817964, 0.06935714, 0.09207257, 0.06785857, 
+               0.05721514, 0.04814343, 0.08742914, 0.06828571, 0.08032221, 
+               0.04539314, 0.073572, 0.07407186, 0.04114286, 0.04942886, 
+               0.053286, 0.07150114, 0.082036, 0.06667886, 0.08542943, 
+               0.07910807, 0.08221429, 0.06764343, 0.08235886, 0.08578571, 
+               0.06017886, 0.07600057, 0.062, 0.06843, 0.08875, 0.06650014, 
+               0.06021514, 0.06417914, 0.06657229, 0.08571486, 0.06364329, 
+               0.04621514, 0.08017857, 0.08735771, 0.03721486, 0.07642914, 
+               0.06357143, 0.08678814, 0.055536, 0.05742886, 0.070072, 
+               0.08528629, 0.080072, 0.07728571, 0.08592929, 0.07432171, 
+               0.0855, 0.08403679, 0.08028629, 0.04435771, 0.08339343)
 
   
   tryCatch( {
@@ -86,29 +113,37 @@ model <- function(par){
                  "_mu=", mu,
                  "_std=", std,
                  ".csv", sep = "")))
-    rawout <- rawout[-ncol(rawout)]
-    results <- vector(length = 2)
-    for(i in 0:1){
+    rawout <- rawout[,-ncol(rawout)]
+    
+    nloci <- length(cutoffs)
+    results <- array(dim = c(1,2))
+    for(gen in 1:2){
       signsnps <- vector("list",10)
       names(signsnps) <- paste('pop', 1:10)
       for(pop in 1:10){
         popdat <- rawout[which(rawout[,2] == pop),]
-        if(i == 0){
-          signsnps[[pop]] <- which((popdat[2,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
-        }else if(i == 1){
-          signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= 0.01)
+        if(gen == 1){
+          signsnps[[pop]] <- which((popdat[2,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= cutoffs[1:nloci])
+        }else if(gen == 2){
+          signsnps[[pop]] <- which((popdat[3,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= cutoffs[1:nloci])
         }
       }
       jaccmat <- array(dim = c(10,10))
       for(j in 1:9){
         for(k in (j+1):10){
           jaccmat[j,k] <- length(intersect(signsnps[[j]], signsnps[[k]])) / length(union(signsnps[[j]], signsnps[[k]]))
+          if(length(union(signsnps[[j]], signsnps[[k]])) == 0) jaccmat[j,k] <- 0
+          # cat("Intersect: ", length(intersect(signsnps[[j]], signsnps[[k]])))
+          # cat("    Union: ", length(union(signsnps[[j]], signsnps[[k]])), "\n")
         }
       }
       jaccmat <- na.omit(as.vector(jaccmat))
       # results[(5 * i + 1):(5 *  i + 5)] <- quantile(jaccmat)
-      results[i + 1] <- c(mean(jaccmat))
+      if(gen == 1) results[,1] <- mean(jaccmat)
+      if(gen == 2) results[,2] <- mean(jaccmat)
+      
     }
+    
     system(paste("rm output/ff=", fitnessFunction,
                  "_seed=", seed,
                  "_a=", a,
@@ -157,7 +192,7 @@ rm(rawout) # , i)
 ##################
 out <- ABC_sequential(method="Lenormand", use_seed=T,
                               model=model, prior=prior, summary_stat_target=observed,
-                              nb_simul=1000, n_cluster = 5) 
+                              nb_simul=10, n_cluster = 5) 
 
 save(out, file = "ABCoutput.RData")
 
