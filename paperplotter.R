@@ -81,7 +81,7 @@ treatment <- c(rep(c("B. Positive Epistasis",
                      "D. Directional QT",
                      "E. Truncating QT",
                      "F. Stabilizing QT"), each = 2000),
-               rep("G. Empirical", each = 2))
+               rep("D. Empirical", each = 2))
 
 generation <- c(rep(c(6,10), each = 1000, times = 6), 
                 c(6,10))
@@ -101,7 +101,7 @@ ggplot(data, aes(y=jaccards, x=as.factor(treatment))) +
   geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
   theme_grey() + 
   theme(text=element_text(family="sans", face="plain", color="#000000", size=15, hjust=0.5, vjust=0.5)) + 
-  guides(fill=guide_legend(title="generation")) + # ggtitle("121 Hap Blocks. Empirical T0") + 
+  guides(fill=guide_legend(title="Generation")) + # ggtitle("121 Hap Blocks. Empirical T0") + 
   xlab("Fitness Function") + 
   ylab("Jaccard Score") + 
   ylim(c(0,1)) +
@@ -159,10 +159,12 @@ plot1 <- ggplot(data, aes(y=meanjac, x=nloci)) +
                           hjust=0.5, 
                           vjust=0.5)) + 
   scale_size(range=c(1, 3)) + 
-  guides(shape=guide_legend(title="Generation")) + 
-  guides(colour=guide_legend(title="Fitness Function")) + 
-  xlab("Number of loci") + 
-  ylab("Mean Jaccard Score")
+  guides(shape=F) + 
+  guides(colour=F) + 
+  ylab("Mean Jaccard Score") + 
+  xlab("Number of Loci") + 
+  ylim(c(0,1)) + 
+  ggtitle("121 Haplotype Blocks")
 
 #################################
 
@@ -215,11 +217,16 @@ plot2 <- ggplot(data, aes(y=meanjac, x=nloci)) +
                           vjust=0.5)) + 
   scale_size(range=c(1, 3)) + 
   guides(shape=guide_legend(title="Generation")) + 
+  guides(colour = guide_legend(title = "Fitness Function")) + 
   xlab("Numer of loci") + 
-  ylab("Mean Jaccard Score")
+  theme(axis.text.y.left = element_blank()) +
+  ylab("") + 
+  ylim(c(0,1)) + 
+  ggtitle("4977 SNPs on 121 Haplotype Blocks")
 
-grid.arrange(plot1, plot2, ncol=2)
-dev.off()
+#################################
+
+grid.arrange(plot1, plot2, ncol=2, widths = c(1,1.35))
 
 ####################################
 ## Supplement: Mut Drift analysis ##
@@ -255,11 +262,12 @@ plot1 <- ggplot(data, aes(y=jaccards, x=as.factor(treatment))) +
   geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
   theme_grey() + 
   theme(text=element_text(family="sans", face="plain", color="#000000", size=15, hjust=0.5, vjust=0.5)) + 
-  guides(fill=guide_legend(title="generation")) + ggtitle("121 Hap Blocks. Empirical T0") + 
-  xlab("Fitness Function") + 
+  guides(fill=F) + 
+  ggtitle("121 Hap Blocks. Empirical T0") + 
+  theme(axis.text.x.bottom = element_blank()) +
+  xlab("") + 
   ylab("Jaccard Score") + 
-  ylim(c(0,1)) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  ylim(c(0,1)) 
 
 ####################################
 
@@ -293,11 +301,13 @@ plot2 <- ggplot(data, aes(y=jaccards, x=as.factor(treatment))) +
   geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
   theme_grey() + 
   theme(text=element_text(family="sans", face="plain", color="#000000", size=15, hjust=0.5, vjust=0.5)) + 
-  guides(fill=guide_legend(title="generation")) + ggtitle("121 Hap Blocks. Neutral T0") + 
-  xlab("Fitness Function") + 
-  ylab("Jaccard Score") + 
-  ylim(c(0,1)) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  guides(fill=guide_legend(title="Generation")) + 
+  ggtitle("121 Hap Blocks. Neutral T0") + 
+  xlab("") + 
+  ylab("") + 
+  theme(axis.text.x.bottom = element_blank(),
+        axis.text.y.left = element_blank()) +
+  ylim(c(0,1)) 
 
 ####################################
 
@@ -331,7 +341,8 @@ plot3 <- ggplot(data, aes(y=jaccards, x=as.factor(treatment))) +
   geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
   theme_grey() + 
   theme(text=element_text(family="sans", face="plain", color="#000000", size=15, hjust=0.5, vjust=0.5)) + 
-  guides(fill=guide_legend(title="generation")) + ggtitle("4977 snps on 121 hap blocks. Empirical T0") + 
+  guides(fill=F) + 
+  ggtitle("4977 snps on 121 hap blocks. Empirical T0") + 
   xlab("Fitness Function") + 
   ylab("Jaccard Score") + 
   ylim(c(0,1)) +
@@ -369,13 +380,16 @@ plot4 <- ggplot(data, aes(y=jaccards, x=as.factor(treatment))) +
   geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
   theme_grey() + 
   theme(text=element_text(family="sans", face="plain", color="#000000", size=15, hjust=0.5, vjust=0.5)) + 
-  guides(fill=guide_legend(title="generation")) + ggtitle("4977 snps on 121 hap blocks. Neutral T0") + 
+  guides(fill=guide_legend(title="Generation")) + ggtitle("4977 snps on 121 hap blocks. Neutral T0") + 
   xlab("Fitness Function") + 
-  ylab("Jaccard Score") + 
+  ylab("") + 
   ylim(c(0,1)) +
+  theme(axis.text.y.left = element_blank()) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
-grid.arrange(plot1, plot2, plot3, plot4, ncol=2)
-dev.off()
+####################################
+
+grid.arrange(plot1, plot2, plot3, plot4, ncol=2,
+             heights = c(1,1.35), widths = c(1,1.15))
 
 ####################################

@@ -131,7 +131,8 @@ model <- function(par){
       jaccmat <- array(dim = c(10,10))
       for(j in 1:9){
         for(k in (j+1):10){
-          jaccmat[j,k] <- length(intersect(signsnps[[j]], signsnps[[k]])) / length(union(signsnps[[j]], signsnps[[k]]))
+          jaccmat[j,k] <- length(intersect(signsnps[[j]], signsnps[[k]])) / 
+            length(union(signsnps[[j]], signsnps[[k]]))
           if(length(union(signsnps[[j]], signsnps[[k]])) == 0) jaccmat[j,k] <- 0
           # cat("Intersect: ", length(intersect(signsnps[[j]], signsnps[[k]])))
           # cat("    Union: ", length(union(signsnps[[j]], signsnps[[k]])), "\n")
