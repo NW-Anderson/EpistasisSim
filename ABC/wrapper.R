@@ -192,7 +192,7 @@ rm(rawout) # , i)
 ##################
 out <- ABC_sequential(method="Lenormand", use_seed=T,
                               model=model, prior=prior, summary_stat_target=observed,
-                              nb_simul=10, n_cluster = 5) 
+                              nb_simul=1000, n_cluster = 5) 
 
 save(out, file = "ABCoutput.RData")
 
