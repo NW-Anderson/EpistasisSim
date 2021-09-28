@@ -24,7 +24,7 @@ for(c in 1:ncol(jaccmatrix)){
   if(jaccmatrix[1,c] == "stabilizing") fitfun <- c(fitfun, "E. Stabilizing QT")
 }
 
-fitfun <- c(fitfun, rep('D. Empirical', times = 2))
+fitfun <- c(fitfun, rep('E. Empirical', times = 2))
 Generation <- c(as.numeric(jaccmatrix[2,]), 6,10)
 nloci <- c(as.numeric(jaccmatrix[3,]), 121,121)
 meanjac <- jaccmatrix[4:103,]
@@ -35,7 +35,6 @@ meanjac <- c(colMeans(meanjac), empjaccs)
 data <- data.frame(fitfun, Generation, nloci, meanjac)
 
 data <- data[-which(data$fitfun == ". Truncating QT" | 
-                      data$fitfun == "D. Directional QT" | 
                       data$fitfun == "E. Stabilizing QT"),]
 
 dev.off()
@@ -61,7 +60,9 @@ ggplot(data, aes(y=meanjac, x=nloci)) +
   guides(shape=guide_legend(title="Generation")) + 
   guides(colour=guide_legend(title="Fitness Function")) + 
   xlab("Number of loci") + 
-  ylab("Mean Jaccard Score")
+  ylab("Mean Jaccard Score") +
+  scale_color_viridis(discrete = T, option = "turbo") +
+  scale_fill_viridis(discrete = T, option = "turbo")
 
 ##################################
 ## Main Text: Epistasis Analysis ##
@@ -81,7 +82,7 @@ treatment <- c(rep(c("B. Positive Epistasis",
                      "D. Directional QT",
                      "E. Truncating QT",
                      "F. Stabilizing QT"), each = 2000),
-               rep("D. Empirical", each = 2))
+               rep("E. Empirical", each = 2))
 
 generation <- c(rep(c(6,10), each = 1000, times = 6), 
                 c(6,10))
@@ -94,18 +95,21 @@ jaccards <- as.numeric(c(jaccards, empjaccs))
 data <- data.frame(treatment, generation, jaccards)
 
 data <- data[-which(data$treatment == "E. Truncating QT" | 
-                      data$treatment == "D. Directional QT" | 
                       data$treatment == "F. Stabilizing QT"),]
 # ggraptR(data)
 ggplot(data, aes(y=jaccards, x=as.factor(treatment))) + 
-  geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
+  geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.3) + 
   theme_grey() + 
   theme(text=element_text(family="sans", face="plain", color="#000000", size=15, hjust=0.5, vjust=0.5)) + 
   guides(fill=guide_legend(title="Generation")) + # ggtitle("121 Hap Blocks. Empirical T0") + 
   xlab("Fitness Function") + 
   ylab("Jaccard Score") + 
   ylim(c(0,1)) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  scale_color_viridis(discrete = T) +
+  scale_fill_viridis(discrete = T)
+  
+
 
 #################################
 ## Supplement: # loci analysis ##
@@ -164,7 +168,10 @@ plot1 <- ggplot(data, aes(y=meanjac, x=nloci)) +
   ylab("Mean Jaccard Score") + 
   xlab("Number of Loci") + 
   ylim(c(0,1)) + 
-  ggtitle("121 Haplotype Blocks")
+  ggtitle("121 Haplotype Blocks") +
+  # scale_color_brewer(palette = "Pastel1")
+  scale_color_viridis(discrete = T, option = "turbo") +
+  scale_fill_viridis(discrete = T, option = "turbo")
 
 #################################
 
@@ -218,12 +225,14 @@ plot2 <- ggplot(data, aes(y=meanjac, x=nloci)) +
   scale_size(range=c(1, 3)) + 
   guides(shape=guide_legend(title="Generation")) + 
   guides(colour = guide_legend(title = "Fitness Function")) + 
-  xlab("Numer of loci") + 
+  xlab("Number of Loci") + 
   theme(axis.text.y.left = element_blank()) +
   ylab("") + 
   ylim(c(0,1)) + 
-  ggtitle("4977 SNPs on 121 Haplotype Blocks")
-
+  ggtitle("4977 SNPs on 121 Haplotype Blocks") + 
+  # scale_color_brewer(palette = "RdYlBu")
+  scale_color_viridis(discrete = T, option = "turbo") +
+  scale_fill_viridis(discrete = T, option = "turbo")
 #################################
 
 grid.arrange(plot1, plot2, ncol=2, widths = c(1,1.35))
@@ -267,9 +276,40 @@ plot1 <- ggplot(data, aes(y=jaccards, x=as.factor(treatment))) +
   theme(axis.text.x.bottom = element_blank()) +
   xlab("") + 
   ylab("Jaccard Score") + 
-  ylim(c(0,1)) 
+  ylim(c(0,1)) +
+  scale_color_viridis(discrete = T) +
+  scale_fill_viridis(discrete = T)
+totaldata <- array()
 
-####################################
+
+setwd("~/Documents/GitHub/EpistasisSim/EmpT0hb")
+empjaccs <- readRDS(file = 'hap_blocks.jaccard.neutral999.RDS')
+tmp <- c(mean(empjaccs[[1]]), mean(empjaccs[[2]]))
+empjaccs <- tmp
+rm(tmp)
+jaccmatrix <- as.matrix(fread(file = 'sim.results.csv'))
+jaccmatrix <- jaccmatrix[-1,-1]
+
+treatment <- c(rep(c("B. Positive Epistasis",
+                     "C. Negative Epistasis",
+                     "A. Multiplicative",
+                     "D. Directional QT",
+                     "E. Truncating QT",
+                     "F. Stabilizing QT"), each = 2000),
+               rep("G. Empirical", each = 2))
+
+generation <- c(rep(c(6,10), each = 1000, times = 6), 
+                c(6,10))
+
+jaccards <- c()
+for(i in 1:12){
+  jaccards <- c(jaccards, jaccmatrix[3:1002,i])
+}
+jaccards <- as.numeric(c(jaccards, empjaccs))
+title <- rep("121 Hap Blocks. Empirical T0", times = length(jaccards))
+data <- data.frame(treatment, generation, jaccards, title)
+totaldata <- rbind(totaldata, data)
+
 
 setwd("~/Documents/GitHub/EpistasisSim/MutDrifthb")
 empjaccs <- readRDS(file = 'hap_blocks.jaccard.neutral999.RDS')
@@ -295,21 +335,11 @@ for(i in 1:12){
   jaccards <- c(jaccards, jaccmatrix[3:1002,i])
 }
 jaccards <- as.numeric(c(jaccards, empjaccs))
-data <- data.frame(treatment, generation, jaccards)
-# ggraptR(data)
-plot2 <- ggplot(data, aes(y=jaccards, x=as.factor(treatment))) + 
-  geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
-  theme_grey() + 
-  theme(text=element_text(family="sans", face="plain", color="#000000", size=15, hjust=0.5, vjust=0.5)) + 
-  guides(fill=guide_legend(title="Generation")) + 
-  ggtitle("121 Hap Blocks. Neutral T0") + 
-  xlab("") + 
-  ylab("") + 
-  theme(axis.text.x.bottom = element_blank(),
-        axis.text.y.left = element_blank()) +
-  ylim(c(0,1)) 
+title <- rep("121 Hap Blocks. Neutral T0", times = length(jaccards))
+data <- data.frame(treatment, generation, jaccards, title)
+totaldata <- rbind(totaldata,data)
 
-####################################
+
 
 setwd("~/Documents/GitHub/EpistasisSim/EmpT0snps")
 empjaccs <- readRDS(file = 'hap_block_snps.jaccard.neutral999.RDS')
@@ -335,20 +365,11 @@ for(i in 1:12){
   jaccards <- c(jaccards, jaccmatrix[3:1002,i])
 }
 jaccards <- as.numeric(c(jaccards, empjaccs))
-data <- data.frame(treatment, generation, jaccards)
-# ggraptR(data)
-plot3 <- ggplot(data, aes(y=jaccards, x=as.factor(treatment))) + 
-  geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
-  theme_grey() + 
-  theme(text=element_text(family="sans", face="plain", color="#000000", size=15, hjust=0.5, vjust=0.5)) + 
-  guides(fill=F) + 
-  ggtitle("4977 snps on 121 hap blocks. Empirical T0") + 
-  xlab("Fitness Function") + 
-  ylab("Jaccard Score") + 
-  ylim(c(0,1)) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+title <- rep("4977 snps on 121 hap blocks. Empirical T0", times = length(jaccards))
+data <- data.frame(treatment, generation, jaccards, title)
+totaldata <- rbind(totaldata, data)
 
-####################################
+
 
 setwd("~/Documents/GitHub/EpistasisSim/MutDriftsnps")
 empjaccs <- readRDS(file = 'hap_block_snps.jaccard.neutral999.RDS')
@@ -374,22 +395,30 @@ for(i in 1:12){
   jaccards <- c(jaccards, jaccmatrix[3:1002,i])
 }
 jaccards <- as.numeric(c(jaccards, empjaccs))
-data <- data.frame(treatment, generation, jaccards)
-# ggraptR(data)
-plot4 <- ggplot(data, aes(y=jaccards, x=as.factor(treatment))) + 
-  geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
+title <- rep("4977 snps on 121 hap blocks. Neutral T0", times = length(jaccards))
+data <- data.frame(treatment, generation, jaccards, title)
+totaldata <- rbind(totaldata, data)
+
+
+totaldata <- totaldata[-1,]
+
+ggplot(totaldata, aes(y=jaccards, x=as.factor(treatment))) + 
+  geom_boxplot(aes(fill=as.factor(generation)), 
+               stat="boxplot", position="dodge", alpha=0.5, width=0.3) + 
+  facet_wrap(~ title) + 
   theme_grey() + 
-  theme(text=element_text(family="sans", face="plain", color="#000000", size=15, hjust=0.5, vjust=0.5)) + 
-  guides(fill=guide_legend(title="Generation")) + ggtitle("4977 snps on 121 hap blocks. Neutral T0") + 
-  xlab("Fitness Function") + 
-  ylab("") + 
-  ylim(c(0,1)) +
-  theme(axis.text.y.left = element_blank()) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  theme(text=element_text(family="sans", 
+                          face="plain", color="#000000", 
+                          size=15, hjust=0.5, vjust=0.5)) + 
+  guides(fill=guide_legend(title="Generation")) + 
+  xlab("Fitness function") + 
+  ylab("Jaccard Score") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  scale_color_viridis(discrete = T) +
+  scale_fill_viridis(discrete = T)
 
-####################################
 
-grid.arrange(plot1, plot2, plot3, plot4, ncol=2,
-             heights = c(1,1.35), widths = c(1,1.15))
+###################################
+## Supplement: Fitness Functions ##
+###################################
 
-####################################
