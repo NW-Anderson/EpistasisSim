@@ -422,3 +422,210 @@ ggplot(totaldata, aes(y=jaccards, x=as.factor(treatment))) +
 ## Supplement: Fitness Functions ##
 ###################################
 
+par(mar=c(4.0, 4.0, 1.5, 1.5), mfrow = c(2,2))
+###################################
+
+nmuts <- 1:121
+x <- nmuts / 121
+
+
+positive <- 1.13^(nmuts) * exp(8 * x^2)
+multiplicative <- 1.13^nmuts
+negative <- 1.13^(nmuts) * exp(-8 * x^2)
+lb <- min(positive, negative, multiplicative)
+ub <- max(positive, negative, multiplicative)
+
+positive <- positive / max(positive)
+multiplicative <- multiplicative / max(multiplicative)
+negative <- negative / max(negative)
+
+
+plot(x = x, y = log(positive), col = turbo(7)[2], type = "l" , xlab = "Phenotype",
+     ylab = "log(Relative Fitness)", lwd = 2, ylim = c(-23,0), cex.lab = 1.25, 
+     cex.axis = 1.5)
+lines(x = x, y = log(multiplicative), col = turbo(7)[1], lwd = 2)
+lines(x = x, y = log(negative), col = turbo(7)[3], lwd = 2)
+title("121 Haplotype Blocks. Multiplicative Fitness Functions", adj = 0)
+# legend("bottomright", legend = c("A. Multiplicative", "B. Positive Epistasis", 
+#                                  "C. Negative Epistasis", "Initial Distribution"), 
+#        col = c("orange", "cyan", "pink", rgb(0,0,0,0.15)), lwd = c(2,2,2,8),
+#        bg = "white", cex = 1)
+
+ci <- seq(from = 0.223786, to = 0.325956, length.out = 3)
+y <- rep(-23, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.15))
+abline(v = 0.223786, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+abline(v = 0.325956, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+
+ci <- seq(from = 0.380902, to = 0.495603, length.out = 3)
+y <- rep(-21.5, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[2])
+
+ci <- seq(from = 0.331542, to = 0.445071, length.out = 3)
+y <- rep(-22, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[1])
+
+ci <- seq(from = 0.29318, to = 0.402245, length.out = 3)
+y <- rep(-22.5, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[3])
+
+###################################
+x <- seq(from = 0, to = 1, length.out = 200)
+
+fmin = 0
+fmax = 1
+b <- -0.3
+s <- 0.1
+r <- -15
+DirectionalEpistasis = fmin + ((fmax - fmin) / ((1 + s * exp(r *(x + b))) ^(1/s)));
+
+
+a <- 10
+b <- -0.25
+tmp = fmin + (fmax - fmin) * (1 - 1 / exp(a * (x + b)));
+tmp[tmp < 0.0] = 1e-30;
+TruncatingEpistasis = tmp;
+
+mu <- 0.4
+std <- 0.07
+StabilizingEpistasis = exp(-0.5 * ((x - mu)^2 / std ^ 2));
+
+
+plot(x = x, y = log(DirectionalEpistasis), type = "l", col = turbo(7)[4], 
+     xlab = "Phenotype", ylab = "log(Relative Fitness)", lwd = 2,
+     ylim = c(-23,0), cex.lab = 1.25, cex.axis = 1.5)
+lines(x = x, y = log(TruncatingEpistasis), col = turbo(7)[5], lwd = 2)
+lines(x = x, y = log(StabilizingEpistasis), col = turbo(7)[6], lwd = 2)
+title("121 Haplotype Blocks. Quantative Fitness Functions", adj = 0)
+# legend("bottomright", legend = c("D. Stabiliing Epistasis",
+#                                  "E. Directional Epistasis", 
+#                                  "F. Truncating Epistasis", 
+#                                  "Initial Distribution"), 
+#        col = c("red", "green", "Blue", rgb(0,0,0,0.15)), lwd = c(2,2,2,8),
+#        bg = "white", cex = 1)
+
+ci <- seq(from = 0.223786, to = 0.325956, length.out = 3)
+y <- rep(-23, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.15))
+abline(v = 0.223786, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+abline(v = 0.325956, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+
+ci <- seq(from = 0.300193, to = 0.406439, length.out = 3)
+y <- rep(-22.5, times = length(ci))
+lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[4])
+
+ci <- seq(from = 0.297201, to = 0.402461, length.out = 3)
+y <- rep(-22, times = length(ci))
+lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[6])
+
+ci <- seq(from = 0.314602, to = 0.418423, length.out = 3)
+y <- rep(-21.5, times = length(ci))
+lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[5])
+
+###################################
+
+nmuts <- 1:121
+x <- nmuts / 121
+
+a <- 8
+positive <- 1.13^(nmuts) * exp(8 * x^2)
+multiplicative <- 1.13^nmuts
+negative <- 1.13^(nmuts) * exp(-8 * x^2)
+lb <- min(positive, negative, multiplicative)
+ub <- max(positive, negative, multiplicative)
+
+positive <- positive / max(positive[1:121])
+multiplicative <- multiplicative / max(multiplicative[1:121])
+negative <- negative / max(negative[1:121])
+
+
+plot(x = x, y =  log(positive), col = turbo(7)[2], type = "l" , xlab = "Phenotype",
+     ylab = " (Relative Fitness)", lwd = 2, 
+     xlim = c(0, 1), cex.lab = 1.25, cex.axis = 1.5, ylim = c(-23,0))
+lines(x = x, y =  log(multiplicative), col = turbo(7)[1], lwd = 2)
+lines(x = x, y =  log(negative), col = turbo(7)[3], lwd = 2)
+title("4977 SNPs on 121 Haplotype Blocks. Multiplicative Fitness Functions", adj = 0)
+# legend("bottomright", legend = c("A. Multiplicative", "B. Positive Epistasis", "
+#                                  C. Negative Epistasis", "Initial Distribution"),
+#        col = c("orange", "cyan", "pink", rgb(0,0,0,0.15)), lwd = c(2,2,2,8),
+#        bg = "white", cex = 1)
+
+ci <- seq(from = 0.392263, to = 0.403815, length.out = 3)
+y <- rep(-23, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.15))
+abline(v = 0.392263, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+abline(v = 0.403815, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+
+ci <- seq(from = 0.433199, to = 0.443856, length.out = 3)
+y <- rep(-21.5, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[2])
+
+ci <- seq(from = 0.432522, to = 0.444504, length.out = 3)
+y <- rep(-22, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[1])
+
+ci <- seq(from = 0.430782,to = 0.441271, length.out = 3)
+y <- rep(-22.5, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[3])
+
+###################################
+
+x <- seq(from = 0, to = 1, length.out = 200)
+
+fmin = 0
+fmax = 1
+b <- -0.41
+s <- 0.1
+r <- -75
+DirectionalEpistasis = fmin + ((fmax - fmin) / ((1 + s * exp(r *(x + b))) ^(1/s)));
+
+
+a <- 40
+b <- -0.395
+tmp = fmin + (fmax - fmin) * (1 - 1 / exp(a * (x + b)));
+tmp[tmp < 0.0] = 1e-30;
+TruncatingEpistasis = tmp;
+
+mu <- 0.435
+std <- 0.0175
+StabilizingEpistasis = exp(-0.5 * ((x - mu)^2 / std ^ 2));
+
+
+plot(x = x, y =  log(DirectionalEpistasis), type = "l", col = turbo(7)[4], 
+     xlab = "Phenotype", ylab = "log(Relative Fitness)", lwd = 2,
+     ylim = c(-23,0), cex.lab = 1.25, cex.axis = 1.5, xlim = c(0, 1))
+lines(x = x, y =  log(TruncatingEpistasis), col = turbo(7)[5], lwd = 2)
+lines(x = x, y =  log(StabilizingEpistasis), col = turbo(7)[6], lwd = 2)
+title("4977 SNPs on 121 Haplotype Blocks. Quantative Fitness Functions", adj = 0)
+legend("bottomright", legend = c("A. Multiplicative", 
+                                 "B. Positive Epistasis", 
+                                 "C. Negative Epistasis", 
+                                 "D. Directional QT", 
+                                 "E. Truncating QT", 
+                                 "F. Stabilizing QT",
+                                 "Initial Distribution"),
+       col = c(turbo(7)[1:6], rgb(0,0,0,0.15)), 
+       lwd = c(2,2,2,2,2,2,8),
+       bg = "white", cex = 1)
+
+ci <- seq(from = 0.392263, to = 0.403815, length.out = 3)
+y <- rep(-23, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.15))
+abline(v = 0.392263, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+abline(v = 0.403815, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+
+ci <- seq(from = 0.401406, to = 0.412646, length.out = 3)
+y <- rep(-22.5, times = length(ci))
+lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[4])
+
+ci <- seq(from = 0.401266, to = 0.412542, length.out = 3)
+y <- rep(-22, times = length(ci))
+lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[6])
+
+ci <- seq(from = 0.401696, to = 0.412732, length.out = 3)
+y <- rep(-21.5, times = length(ci))
+lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[5])
+
+###################################
+
+

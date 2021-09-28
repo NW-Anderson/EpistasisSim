@@ -14,24 +14,24 @@ setwd("/media/lee/HDD_Array/nwanderson/EpistasisSim/ABC")
 #################
 ## test params ##
 #################
-seed = 1
-npops = 10
-nloci = 121
-popsize = 1750
-scaleT0 = 0
-scales = 0
-fitnessFunction = 1
-fmin = 0
-fmax = 1
-s = 1
-r = 1
-a = 8
-b = 1
-mu = 1
-std = 1 
-par <- c(seed, npops, nloci, popsize, scaleT0, scales,
-         fitnessFunction, fmin, fmax, s, r, a, b, mu, std)
-rm(list=ls()[-9])
+# seed = 1
+# npops = 10
+# nloci = 121
+# popsize = 1750
+# scaleT0 = 0
+# scales = 0
+# fitnessFunction = 1
+# fmin = 0
+# fmax = 1
+# s = 1
+# r = 1
+# a = 8
+# b = 1
+# mu = 1
+# std = 1 
+# par <- c(seed, npops, nloci, popsize, scaleT0, scales,
+#          fitnessFunction, fmin, fmax, s, r, a, b, mu, std)
+# rm(list=ls()[-9])
 
 ####################
 ## model function ##
@@ -172,7 +172,7 @@ prior <- list(c("unif",10,10), # npops
               c("unif",1,1), # fmax
               c("unif",1,1), # s
               c("unif",1,1), # r
-              c("unif",0,15), # a
+              c("unif",0,50), # a
               c("unif",1,1), # b
               c("unif", 1,1), # mu
               c("unif", 1,1)) # std
@@ -193,7 +193,7 @@ rm(rawout) # , i)
 ##################
 out <- ABC_sequential(method="Lenormand", use_seed=T,
                               model=model, prior=prior, summary_stat_target=observed,
-                              nb_simul=1000, n_cluster = 5) 
+                              nb_simul=2000, n_cluster = 5) 
 
 save(out, file = "ABCoutput.RData")
 
