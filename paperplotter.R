@@ -49,11 +49,11 @@ ggplot(data, aes(y=meanjac, x=nloci)) +
             position="identity", 
             alpha=0.5,
             size = 1.25) + 
-  theme_grey() + 
+  theme_bw() + 
   theme(text=element_text(family="sans", 
                           face="plain", 
                           color="#000000", 
-                          size=15, 
+                          size=20, 
                           hjust=0.5, 
                           vjust=0.5)) + 
   scale_size(range=c(1, 3)) + 
@@ -99,8 +99,8 @@ data <- data[-which(data$treatment == "E. Truncating QT" |
 # ggraptR(data)
 ggplot(data, aes(y=jaccards, x=as.factor(treatment))) + 
   geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.3) + 
-  theme_grey() + 
-  theme(text=element_text(family="sans", face="plain", color="#000000", size=15, hjust=0.5, vjust=0.5)) + 
+  theme_bw() + 
+  theme(text=element_text(family="sans", face="plain", color="#000000", size=20, hjust=0.5, vjust=0.5)) + 
   guides(fill=guide_legend(title="Generation")) + # ggtitle("121 Hap Blocks. Empirical T0") + 
   xlab("Fitness Function") + 
   ylab("Jaccard Score") + 
@@ -155,11 +155,11 @@ plot1 <- ggplot(data, aes(y=meanjac, x=nloci)) +
             position="identity", 
             alpha=0.5,
             size = 1.25) + 
-  theme_grey() + 
+  theme_bw() + 
   theme(text=element_text(family="sans", 
                           face="plain", 
                           color="#000000", 
-                          size=15, 
+                          size=20, 
                           hjust=0.5, 
                           vjust=0.5)) + 
   scale_size(range=c(1, 3)) + 
@@ -215,11 +215,11 @@ plot2 <- ggplot(data, aes(y=meanjac, x=nloci)) +
             position="identity", 
             alpha=0.5,
             size = 1.25) + 
-  theme_grey() + 
+  theme_bw() + 
   theme(text=element_text(family="sans", 
                           face="plain", 
                           color="#000000", 
-                          size=15, 
+                          size=20, 
                           hjust=0.5, 
                           vjust=0.5)) + 
   scale_size(range=c(1, 3)) + 
@@ -269,8 +269,8 @@ data <- data.frame(treatment, generation, jaccards)
 # ggraptR(data)
 plot1 <- ggplot(data, aes(y=jaccards, x=as.factor(treatment))) + 
   geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.2) + 
-  theme_grey() + 
-  theme(text=element_text(family="sans", face="plain", color="#000000", size=15, hjust=0.5, vjust=0.5)) + 
+  theme_bw() + 
+  theme(text=element_text(family="sans", face="plain", color="#000000", size=20, hjust=0.5, vjust=0.5)) + 
   guides(fill=F) + 
   ggtitle("121 Hap Blocks. Empirical T0") + 
   theme(axis.text.x.bottom = element_blank()) +
@@ -406,13 +406,14 @@ ggplot(totaldata, aes(y=jaccards, x=as.factor(treatment))) +
   geom_boxplot(aes(fill=as.factor(generation)), 
                stat="boxplot", position="dodge", alpha=0.5, width=0.3) + 
   facet_wrap(~ title) + 
-  theme_grey() + 
+  theme_bw() + 
   theme(text=element_text(family="sans", 
                           face="plain", color="#000000", 
-                          size=15, hjust=0.5, vjust=0.5)) + 
+                          size=20, hjust=0.5, vjust=0.5)) + 
   guides(fill=guide_legend(title="Generation")) + 
   xlab("Fitness function") + 
   ylab("Jaccard Score") +
+  ylim(c(0,1)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
   scale_color_viridis(discrete = T) +
   scale_fill_viridis(discrete = T)
@@ -448,26 +449,26 @@ lines(x = x, y = log(negative), col = turbo(7)[3], lwd = 2)
 title("121 Haplotype Blocks. Multiplicative Fitness Functions", adj = 0)
 # legend("bottomright", legend = c("A. Multiplicative", "B. Positive Epistasis", 
 #                                  "C. Negative Epistasis", "Initial Distribution"), 
-#        col = c("orange", "cyan", "pink", rgb(0,0,0,0.15)), lwd = c(2,2,2,8),
+#        col = c("orange", "cyan", "pink", rgb(0,0,0,0.25)), lwd = c(2,2,2,8),
 #        bg = "white", cex = 1)
 
 ci <- seq(from = 0.223786, to = 0.325956, length.out = 3)
 y <- rep(-23, times = length(ci))
-lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.15))
-abline(v = 0.223786, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
-abline(v = 0.325956, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.25))
+abline(v = 0.223786, lty = 2, col = rgb(0,0,0,0.25), lwd = 0.5)
+abline(v = 0.325956, lty = 2, col = rgb(0,0,0,0.25), lwd = 0.5)
 
 ci <- seq(from = 0.380902, to = 0.495603, length.out = 3)
 y <- rep(-21.5, times = length(ci))
-lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[2])
+lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.25)[2])
 
 ci <- seq(from = 0.331542, to = 0.445071, length.out = 3)
 y <- rep(-22, times = length(ci))
-lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[1])
+lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.25)[1])
 
 ci <- seq(from = 0.29318, to = 0.402245, length.out = 3)
 y <- rep(-22.5, times = length(ci))
-lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[3])
+lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.25)[3])
 
 ###################################
 x <- seq(from = 0, to = 1, length.out = 200)
@@ -501,26 +502,26 @@ title("121 Haplotype Blocks. Quantative Fitness Functions", adj = 0)
 #                                  "E. Directional Epistasis", 
 #                                  "F. Truncating Epistasis", 
 #                                  "Initial Distribution"), 
-#        col = c("red", "green", "Blue", rgb(0,0,0,0.15)), lwd = c(2,2,2,8),
+#        col = c("red", "green", "Blue", rgb(0,0,0,0.25)), lwd = c(2,2,2,8),
 #        bg = "white", cex = 1)
 
 ci <- seq(from = 0.223786, to = 0.325956, length.out = 3)
 y <- rep(-23, times = length(ci))
-lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.15))
-abline(v = 0.223786, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
-abline(v = 0.325956, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.25))
+abline(v = 0.223786, lty = 2, col = rgb(0,0,0,0.25), lwd = 0.5)
+abline(v = 0.325956, lty = 2, col = rgb(0,0,0,0.25), lwd = 0.5)
 
 ci <- seq(from = 0.300193, to = 0.406439, length.out = 3)
 y <- rep(-22.5, times = length(ci))
-lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[4])
+lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.25)[4])
 
 ci <- seq(from = 0.297201, to = 0.402461, length.out = 3)
 y <- rep(-22, times = length(ci))
-lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[6])
+lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.25)[6])
 
 ci <- seq(from = 0.314602, to = 0.418423, length.out = 3)
 y <- rep(-21.5, times = length(ci))
-lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[5])
+lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.25)[5])
 
 ###################################
 
@@ -547,26 +548,26 @@ lines(x = x, y =  log(negative), col = turbo(7)[3], lwd = 2)
 title("4977 SNPs on 121 Haplotype Blocks. Multiplicative Fitness Functions", adj = 0)
 # legend("bottomright", legend = c("A. Multiplicative", "B. Positive Epistasis", "
 #                                  C. Negative Epistasis", "Initial Distribution"),
-#        col = c("orange", "cyan", "pink", rgb(0,0,0,0.15)), lwd = c(2,2,2,8),
+#        col = c("orange", "cyan", "pink", rgb(0,0,0,0.25)), lwd = c(2,2,2,8),
 #        bg = "white", cex = 1)
 
 ci <- seq(from = 0.392263, to = 0.403815, length.out = 3)
 y <- rep(-23, times = length(ci))
-lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.15))
-abline(v = 0.392263, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
-abline(v = 0.403815, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.25))
+abline(v = 0.392263, lty = 2, col = rgb(0,0,0,0.25), lwd = 0.5)
+abline(v = 0.403815, lty = 2, col = rgb(0,0,0,0.25), lwd = 0.5)
 
 ci <- seq(from = 0.433199, to = 0.443856, length.out = 3)
 y <- rep(-21.5, times = length(ci))
-lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[2])
+lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.25)[2])
 
 ci <- seq(from = 0.432522, to = 0.444504, length.out = 3)
 y <- rep(-22, times = length(ci))
-lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[1])
+lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.25)[1])
 
 ci <- seq(from = 0.430782,to = 0.441271, length.out = 3)
 y <- rep(-22.5, times = length(ci))
-lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[3])
+lines(x=ci, y = y, lwd = 8, col = turbo(7, alpha = 0.25)[3])
 
 ###################################
 
@@ -604,27 +605,27 @@ legend("bottomright", legend = c("A. Multiplicative",
                                  "E. Truncating QT", 
                                  "F. Stabilizing QT",
                                  "Initial Distribution"),
-       col = c(turbo(7)[1:6], rgb(0,0,0,0.15)), 
+       col = c(turbo(7)[1:6], rgb(0,0,0,0.25)), 
        lwd = c(2,2,2,2,2,2,8),
        bg = "white", cex = 1)
 
 ci <- seq(from = 0.392263, to = 0.403815, length.out = 3)
 y <- rep(-23, times = length(ci))
-lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.15))
-abline(v = 0.392263, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
-abline(v = 0.403815, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.25))
+abline(v = 0.392263, lty = 2, col = rgb(0,0,0,0.25), lwd = 0.5)
+abline(v = 0.403815, lty = 2, col = rgb(0,0,0,0.25), lwd = 0.5)
 
 ci <- seq(from = 0.401406, to = 0.412646, length.out = 3)
 y <- rep(-22.5, times = length(ci))
-lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[4])
+lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.25)[4])
 
 ci <- seq(from = 0.401266, to = 0.412542, length.out = 3)
 y <- rep(-22, times = length(ci))
-lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[6])
+lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.25)[6])
 
 ci <- seq(from = 0.401696, to = 0.412732, length.out = 3)
 y <- rep(-21.5, times = length(ci))
-lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.15)[5])
+lines(x = ci, y = y, lwd = 8, col = turbo(7, alpha = 0.25)[5])
 
 ###################################
 
