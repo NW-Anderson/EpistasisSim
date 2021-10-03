@@ -12,6 +12,6 @@ transfer_input_files = slimbuild.tar.gz, New.slim, sortedhbdata.csv, sampledloci
 
 request_cpus = 1
 request_memory = 2GB
-request_disk = 2GB
+request_disk = 2GBljk
 
 queue seed,fitnessFunction,a,s,r,b,mu,std,nloci,simnum from params.txt

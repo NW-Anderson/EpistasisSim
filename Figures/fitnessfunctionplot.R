@@ -1,0 +1,99 @@
+################
+## Quantative ##
+################
+x <- seq(from = 0, to = 1, length.out = 200)
+
+fmin = 0
+fmax = 1
+b <- -0.41
+s <- 0.1
+r <- -75
+DirectionalEpistasis = fmin + ((fmax - fmin) / ((1 + s * exp(r *(x + b))) ^(1/s)));
+
+
+a <- 40
+b <- -0.395
+tmp = fmin + (fmax - fmin) * (1 - 1 / exp(a * (x + b)));
+tmp[tmp < 0.0] = 1e-30;
+TruncatingEpistasis = tmp;
+
+mu <- 0.435
+std <- 0.0175
+StabilizingEpistasis = exp(-0.5 * ((x - mu)^2 / std ^ 2));
+
+
+plot(x = x, y =  (DirectionalEpistasis), type = "l", col = "green", 
+     xlab = "Phenotype", ylab = " (Relative Fitness)", lwd = 2,
+     ylim = c(0,1), cex.lab = 1.25, cex.axis = 1.5, xlim = c(0.3, 0.5))
+lines(x = x, y =  (TruncatingEpistasis), col = "blue", lwd = 2)
+lines(x = x, y =  (StabilizingEpistasis), col = "red", lwd = 2)
+title("Quantative Fitness Functions", adj = 0)
+legend("topleft", legend = c("D. Stabilizing Epistasis","E. Directional Epistasis", "F. Truncating Epistasis", "Initial Distribution"),
+       col = c("red", "green", "Blue", rgb(0,0,0,0.15)), lwd = c(2,2,2,8),
+       bg = "white", cex = 1.5)
+
+ci <- seq(from = 0.392263, to = 0.403815, length.out = 3)
+y <- rep(-5, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.15))
+abline(v = 0.392263, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+abline(v = 0.403815, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+
+ci <- seq(from = 0.401406, to = 0.412646, length.out = 3)
+y <- rep(-4.75, times = length(ci))
+lines(x = ci, y = y, lwd = 8, col = rgb(0,1,0,0.15))
+
+ci <- seq(from = 0.401266, to = 0.412542, length.out = 3)
+y <- rep(-4.5, times = length(ci))
+lines(x = ci, y = y, lwd = 8, col = rgb(1,0,0,0.15))
+
+ci <- seq(from = 0.401696, to = 0.412732, length.out = 3)
+y <- rep(-4.25, times = length(ci))
+lines(x = ci, y = y, lwd = 8, col = rgb(0,0,1,0.15))
+
+####################
+## Multiplicative ##
+####################
+nmuts <- 1:121
+x <- nmuts / 121
+
+a <- 5
+positive <- 1.13^(nmuts * (1.5))
+multiplicative <- 1.13^nmuts
+negative <- 1.13^(nmuts * (0.5))
+lb <- min(positive, negative, multiplicative)
+ub <- max(positive, negative, multiplicative)
+
+positive <- positive / max(positive[1:121])
+multiplicative <- multiplicative / max(multiplicative[1:121])
+negative <- negative / max(negative[1:121])
+
+
+plot(x = x, y =  log(positive), col = "cyan", type = "l" , xlab = "Phenotype",
+     ylab = " (Relative Fitness)", lwd = 2, 
+     xlim = c(0, 1), cex.lab = 1.25, cex.axis = 1.5)
+lines(x = x, y =  log(multiplicative), col = 'orange', lwd = 2)
+lines(x = x, y =  log(negative), col = 'pink', lwd = 2)
+title("Multiplicative Fitness Functions", adj = 0)
+# legend("bottomright", legend = c("A. Multiplicative", "B. Positive Epistasis", "C. Negative Epistasis", "Initial Distribution"),
+#        col = c("orange", "cyan", "pink", rgb(0,0,0,0.15)), lwd = c(2,2,2,8),
+#        bg = "white", cex = 1.5)
+
+ci <- seq(from = 0.392263, to = 0.403815, length.out = 3)
+y <- rep(-23, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = rgb(0,0,0,0.15))
+abline(v = 0.392263, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+abline(v = 0.403815, lty = 2, col = rgb(0,0,0,0.15), lwd = 0.5)
+
+ci <- seq(from = 0.433199, to = 0.443856, length.out = 3)
+y <- rep(-21.5, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = rgb(0,1,1,0.15))
+
+ci <- seq(from = 0.432522, to = 0.444504, length.out = 3)
+y <- rep(-22, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = rgb(1, .647, 0,0.15))
+
+ci <- seq(from = 0.430782,to = 0.441271, length.out = 3)
+y <- rep(-22.5, times = length(ci))
+lines(x=ci, y = y, lwd = 8, col = rgb(1, .753, .796,0.15))
+
+
