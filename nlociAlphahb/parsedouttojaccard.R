@@ -44,14 +44,17 @@ library(foreach)
 library(ggraptR)
 opts <- list(preschedule = FALSE)
 registerDoMC(7)
+setwd("~/Documents/GitHub/EpistasisSim/ABC")
+load(file = "ABCoutput.RData")
+abcEst <- sum(out$param * out$weights)
 # setwd("/media/lee/HDD_Array/nwanderson/EpistasisSim/jacccalc/nlociAlpha/")
-setwd("~/Documents/GitHub/EpistasisSim/nlociAlpha/")
+setwd("~/Documents/GitHub/EpistasisSim/nlocialphahb/")
 empdata <- fread(file = "sortedhbdata.csv")
 # setwd("/media/nathan/T7/EpistasisSim/nlocihb/")
-setwd("/Volumes/T7/EpistasisSim/nlociAlpha")
+setwd("/Volumes/T7/EpistasisSim/nlocialphahb")
 alphas <- list.files(path = './SLiMouts/')
 sim.results <- array(dim = c(103, 2 * length(alphas) * 13))
-sim.results[1,] <- rep(paste("alpha=", c(8,-8,1,-1,15,-15,0), sep = ""), 
+sim.results[1,] <- rep(paste("alpha=", c(8,-8,1,-1,abcEst,-abcEst,0), sep = ""), 
                        each = 2, times = 13)
 sim.results[2,] <- rep(c(6,10), each = 1, times = 7*13)
 sim.results[3,] <- rep(c(seq(from = 10, to = 120, by = 10), 121), each = 14, times = 1)
@@ -73,4 +76,6 @@ for(a in alphas){
     sim.results[4:103, which(sim.results[1,] == a & sim.results[3,] == nloci)] <- meanjaccs
   }
 }
+setwd("~/Documents/GitHub/EpistasisSim/nlocialphahb/")
+
 write.csv(sim.results, file = "sim.results.csv")

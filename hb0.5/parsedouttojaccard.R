@@ -38,10 +38,10 @@ library(ggraptR)
 library(data.table)
 opts <- list(preschedule = FALSE)
 registerDoMC(7)
-# setwd("/media/lee/HDD_Array/nwanderson/EpistasisSim/jacccalc/EmpT0hb/")
-setwd("~/Documents/GitHub/EpistasisSim/hb0.5/")
+setwd("/media/lee/HDD_Array/nwanderson/EpistasisSim/jacccalc/hbT0.5/")
+# setwd("~/Documents/GitHub/EpistasisSim/hb0.5/")
 empdata <- fread(file = "sortedhbdata.csv")
-setwd("/Volumes/T7/EpistasisSim/hbT0.5")
+# setwd("/Volumes/T7/EpistasisSim/hbT0.5")
 FFs <- list.files(path = './SLiMouts/')
 sim.results <- array(dim = c(1002, 2 * length(FFs)))
 sim.results[1,] <- rep(c("positive",
@@ -68,5 +68,5 @@ for(ff in FFs){
   if(ff == "diminishingReturns"){sim.results[3:1002, 9:10] <- meanjaccs}
   if(ff == "stabilizing"){sim.results[3:1002, 11:12] <- meanjaccs}
 }
-setwd("~/Documents/GitHub/EpistasisSim/hb0.5/")
+# setwd("~/Documents/GitHub/EpistasisSim/hb0.5/")
 write.csv(sim.results, file = "sim.results.csv")

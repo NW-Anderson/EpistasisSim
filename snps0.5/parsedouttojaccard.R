@@ -38,10 +38,10 @@ library(ggraptR)
 library(data.table)
 opts <- list(preschedule = FALSE)
 registerDoMC(8)
-setwd("/media/lee/HDD_Array/nwanderson/EpistasisSim/jacccalc/snpsT0.5")
-# setwd("~/Documents/GitHub/EpistasisSim/snps0.5/")
+# setwd("/media/lee/HDD_Array/nwanderson/EpistasisSim/jacccalc/snpsT0.5")
+setwd("~/Documents/GitHub/EpistasisSim/snps0.5/")
 empdata <- fread(file = "sortedsnpdata.csv")
-# setwd("/Volumes/T7/EpistasisSim/snpsT0.5")
+setwd("/Volumes/T7/EpistasisSim/snpsT0.5")
 FFs <- list.files(path = './SLiMouts/')
 sim.results <- array(dim = c(1002, 2 * length(FFs)))
 sim.results[1,] <- rep(c("positive",
@@ -59,7 +59,7 @@ for(ff in FFs){
     path <- paste("./SLiMouts/", ff, "/", sim, sep = '')
     rawout <- read.csv(file = path)
     rawout <- rawout[,-ncol(rawout)]
-    return(GetJaccards(rawout = rawout, cutoffs = empdata$Gen10_neutAFC99))
+    return(GetJaccards(rawout = rawout, cutoffs = empdata$Gen10_neutAFC999))
   }
   if(nrow(meanjaccs) != 1000) meanjaccs <- rbind(meanjaccs, array(dim = c(1,2)))
   if(ff == "positive"){sim.results[3:1002, 1:2] <- meanjaccs}
@@ -69,4 +69,6 @@ for(ff in FFs){
   if(ff == "diminishingReturns"){sim.results[3:1002, 9:10] <- meanjaccs}
   if(ff == "stabilizing"){sim.results[3:1002, 11:12] <- meanjaccs}
 }
+setwd("~/Documents/GitHub/EpistasisSim/snps0.5/")
+
 write.csv(sim.results, file = "sim.results.csv")
