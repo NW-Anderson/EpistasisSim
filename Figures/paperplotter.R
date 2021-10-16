@@ -75,7 +75,6 @@ data = data[which(data$fitfun == "D. Directional QT"),]
 totaldata <- rbind(totaldata, data)
 totaldata <- totaldata[-1,]
 
-## Jens changes
 
 
 ggplot(totaldata, aes(y=meanjac, x=nloci)) + 
