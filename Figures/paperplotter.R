@@ -2,6 +2,7 @@ library(data.table)
 library(ggraptR)
 library(gridExtra)
 library(viridis)
+library(matrixStats)
 dev.off()
 
 ################################
@@ -36,7 +37,24 @@ meanjac <- mapply(meanjac, FUN=as.numeric)
 meanjac <- matrix(data = meanjac, nrow = 100, ncol = 182)
 meanjac <- c(colMeans(meanjac), empjaccs)
 
-data <- data.frame(fitfun, Generation, nloci, meanjac)
+sdjac <- jaccmatrix[4:103,]
+sdjac <- mapply(sdjac, FUN=as.numeric)
+sdjac <- matrix(data = sdjac, nrow = 100, ncol = 182)
+sdjac <- c(colSds(sdjac), empjaccs)
+
+U95 <- c()
+L95 <- c()
+tmp <- jaccmatrix[4:103,]
+tmp <- mapply(tmp, FUN=as.numeric)
+tmp <- matrix(data = tmp, nrow = 100, ncol = 182)
+for(c in 1:ncol(tmp)){
+  U95 <- c(U95, quantile(tmp[,c], probs = c(0.25,0.75))[2])
+  L95 <- c(L95, quantile(tmp[,c], probs = c(0.25,0.75))[1])
+}
+rm(tmp)
+U95 <- c(U95, empjaccs)
+L95 <- c(L95, empjaccs)
+data <- data.frame(fitfun, Generation, nloci, meanjac, sdjac, U95, L95)
 data <- data[-which(data$fitfun == "B. alpha = - 8" | data$fitfun == "E. alpha = 8" |
                       data$fitfun == "D. alpha = 1" | data$fitfun == "B. alpha = - 1"),]
 
@@ -70,23 +88,56 @@ meanjac <- mapply(meanjac, FUN=as.numeric)
 meanjac <- matrix(data = meanjac, nrow = 100, ncol = 156)
 meanjac <- c(colMeans(meanjac), empjaccs)
 
-data = data.frame(fitfun, Generation, nloci, meanjac)
+sdjac <- jaccmatrix[4:103,]
+sdjac <- mapply(sdjac, FUN=as.numeric)
+sdjac <- matrix(data = sdjac, nrow = 100, ncol = 156)
+sdjac <- c(colSds(sdjac), empjaccs)
+
+U95 <- c()
+L95 <- c()
+tmp <- jaccmatrix[4:103,]
+tmp <- mapply(tmp, FUN=as.numeric)
+tmp <- matrix(data = tmp, nrow = 100, ncol = 156)
+for(c in 1:ncol(tmp)){
+  U95 <- c(U95, quantile(tmp[,c], probs = c(0.25,0.75))[2])
+  L95 <- c(L95, quantile(tmp[,c], probs = c(0.25,0.75))[1])
+}
+rm(tmp)
+U95 <- c(U95, empjaccs)
+L95 <- c(L95, empjaccs)
+data = data.frame(fitfun, Generation, nloci, meanjac, sdjac, U95, L95)
 data = data[which(data$fitfun == "D. Directional QT"),]
+
 totaldata <- rbind(totaldata, data)
+totaldata <- totaldata[-which(totaldata$nloci == 120),]
+totaldata <- totaldata[-which(totaldata$fitfun == "E. Empirical"),]
 totaldata <- totaldata[-1,]
+
+totaldata$fitfun <- factor(totaldata$fitfun, 
+                           levels = sort(unique(totaldata$fitfun)), 
+                           labels = c("alpha = -36.5\n", 
+                                      "alpha = 0\n    (Multiplicative)\n",
+                                      "alpha = 36.5\n", "Directional QT"))
+
 
 
 
 ggplot(totaldata, aes(y=meanjac, x=nloci)) + 
+  geom_hline(yintercept=empjaccs[1], 
+             linetype="dotdash", 
+             color = turbo(11)[11], size = 1) +
+  geom_hline(yintercept=empjaccs[2], 
+             linetype="dashed", 
+             color = turbo(11)[11], size  = 1) +
   geom_point(aes(shape=as.factor(Generation), colour=fitfun), 
              stat="identity", 
              position="identity", 
-             alpha=0.5, 
+             alpha=0.6, 
              size=4) + 
   geom_line(aes(colour=fitfun, shape = as.factor(Generation)), 
             stat="identity", 
             position="identity", 
-            alpha=0.5,
+            alpha=0.6,
             size = 1.25) + 
   theme_bw() + 
   theme(text=element_text(family="sans", 
@@ -96,18 +147,37 @@ ggplot(totaldata, aes(y=meanjac, x=nloci)) +
                           hjust=0.5, 
                           vjust=0.5)) + 
   scale_size(range=c(1, 3)) + 
-  guides(shape=guide_legend(title="Generation")) + 
+  guides(shape=guide_legend(title="Generation", vjust = -10)) + 
   guides(colour=guide_legend(title="Fitness Function")) + 
   xlab("Number of Loci") + 
   ylab("Mean Jaccard Score") +
   scale_color_manual(values = turbo(11)[c(1,6,9,4,11)]) +
-  geom_hline(yintercept=empjaccs[1], linetype="dashed", color = turbo(11)[11]) +
-  geom_hline(yintercept=empjaccs[2], linetype="dashed", color = turbo(11)[11])
+  scale_x_continuous(breaks = c(seq(from = 20, 
+                                    to = 100,
+                                    by = 20),121)) +
+  annotate("text", x = 130, y = 0.6275, 
+           label = "Empirical Gen 6" , color=turbo(11)[11], 
+           size=4 , fontface="bold") +
+  annotate("text", x = 130, y = .775, 
+           label = "Empirical Gen 10" , color=turbo(11)[11], 
+           size=4 , fontface="bold") + 
+  geom_errorbar(aes(colour=fitfun, 
+                    ymin=L95, 
+                    ymax=U95), 
+                width=0, alpha=0.5, size=1.2) + 
+  geom_ribbon(aes(colour=fitfun, 
+                  shape = as.factor(Generation),
+                  fill = fitfun,
+                  ymin=L95, 
+                  ymax=U95), 
+              alpha = 0.2, colour = NA,
+              show.legend = F) + 
+  coord_cartesian(xlim = c(10,121), clip = 'off') +
+  scale_fill_manual(values = turbo(11)[c(1,6,9,4,11)]) 
 
 
-  
-  # scale_color_viridis(discrete = T, option = "turbo") +
-  # scale_fill_viridis(discrete = T, option = "turbo")
+
+
 
 ###################################
 ## Main Text: Epistasis Analysis ##
@@ -135,9 +205,12 @@ for(i in 1:8){
 jaccards <- as.numeric(c(jaccards))
 data <- data.frame(treatment, generation, jaccards)
 
-# data <- data[-which(data$treatment == "E. Truncating QT" | 
-#                       data$treatment == "F. Stabilizing QT"),]
-# ggraptR(data)
+data$treatment <-  factor(data$treatment, 
+                          levels = sort(unique(data$treatment)), 
+                          labels = c("alpha = 0\n(Multiplicative)", 
+                                     "alpha = 8",
+                                     "alpha = - 8", "alpha = 36.5"))
+
 ggplot(data, aes(y=jaccards, x=as.factor(treatment))) + 
   geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.3) + 
   theme_bw() + 
@@ -149,9 +222,19 @@ ggplot(data, aes(y=jaccards, x=as.factor(treatment))) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
   scale_color_manual(values = viridis(12)[c(3,12)]) + 
   scale_fill_manual(values = viridis(12)[c(3,12)]) +
-  geom_hline(yintercept=empjaccs[1], linetype="dashed", color = turbo(12)[11]) +
-  geom_hline(yintercept=empjaccs[2], linetype="dashed", color = turbo(12)[11])
-  
+  geom_hline(yintercept=empjaccs[1], 
+             linetype="dotdash", 
+             color = turbo(11)[11], size = 1.) +
+  geom_hline(yintercept=empjaccs[2], 
+             linetype="dashed", 
+             color = turbo(11)[11], size  = 1.) +
+  annotate("text", x = 1.1, y = 0.6275, 
+           label = "Empirical Gen 6" , color=turbo(11)[11], 
+           size=4 , fontface="bold") +
+  annotate("text", x = 1.1, y = .775, 
+           label = "Empirical Gen 10" , color=turbo(11)[11], 
+           size=4 , fontface="bold")
+
 
 
 ################################
@@ -188,7 +271,13 @@ meanjac <- c(colMeans(meanjac), empjaccs)
 
 data <- data.frame(fitfun, Generation, nloci, meanjac)
 
-# data <- data[-which(data$fitfun == "B. alpha=-8"),]
+data <- data[-which(data$fitfun == "H. Empirical"),]
+data <- data[-which(data$nloci == 120),]
+data$fitfun <-  factor(data$fitfun, 
+                       levels = sort(unique(data$fitfun)), 
+                       labels = substr(sort(unique(data$fitfun)), 
+                                       4, nchar(sort(unique(data$fitfun)))))
+
 
 ggplot(data, aes(y=meanjac, x=nloci)) + 
   geom_point(aes(shape=as.factor(Generation), colour=fitfun), 
@@ -214,11 +303,26 @@ ggplot(data, aes(y=meanjac, x=nloci)) +
   xlab("Number of Loci") + 
   ylab("Mean Jaccard Score") +
   scale_color_manual(values = turbo(11)[c(1,2,3,6,7,8,9,11)]) +
-  geom_hline(yintercept=empjaccs[1], linetype="dashed", color = turbo(11)[11]) +
-  geom_hline(yintercept=empjaccs[2], linetype="dashed", color = turbo(11)[11])
-  
-  # scale_color_viridis(discrete = T, option = "turbo") +
-  # scale_fill_viridis(discrete = T, option = "turbo")
+  geom_hline(yintercept=empjaccs[1], 
+             linetype="dotdash", 
+             color = turbo(11)[11], size = 1.) +
+  geom_hline(yintercept=empjaccs[2], 
+             linetype="dashed", 
+             color = turbo(11)[11], size  = 1.) +
+  annotate("text", x = 25, y = 0.6275, 
+           label = "Empirical Gen 6" , color=turbo(11)[11], 
+           size=4 , fontface="bold") +
+  annotate("text", x = 25, y = .775, 
+           label = "Empirical Gen 10" , color=turbo(11)[11], 
+           size=4 , fontface="bold") +
+  scale_x_continuous(breaks = c(seq(from = 20, 
+                                    to = 100,
+                                    by = 20),121)) 
+
+
+
+
+
 
 #################################
 ## Supplement: # loci analysis ##
@@ -252,6 +356,8 @@ meanjac <- matrix(data = meanjac, nrow = 100, ncol = 156)
 meanjac <- c(colMeans(meanjac), empjaccs)
 
 data = data.frame(fitfun, Generation, nloci, meanjac)
+data <- data[-which(data$fitfun == "G. Empirical"),]
+data <- data[-which(data$nloci == 120),]
 
 plot1 <- ggplot(data, aes(y=meanjac, x=nloci)) + 
   geom_point(aes(shape=as.factor(Generation), colour=fitfun), 
@@ -279,11 +385,26 @@ plot1 <- ggplot(data, aes(y=meanjac, x=nloci)) +
   ylim(c(0,1)) + 
   ggtitle("121 Haplotype Blocks") +
   scale_color_manual(values = turbo(11)[c(2,6,8,10,5,4,11)]) +
-  geom_hline(yintercept=empjaccs[1], linetype="dashed", color = turbo(11)[11]) +
-  geom_hline(yintercept=empjaccs[2], linetype="dashed", color = turbo(11)[11])
-  # scale_color_brewer(palette = "Pastel1")
-  # scale_color_viridis(discrete = T, option = "turbo") +
-  # scale_fill_viridis(discrete = T, option = "turbo")
+  geom_hline(yintercept=empjaccs[1], 
+             linetype="dotdash", 
+             color = turbo(11)[11], size = 1.) +
+  geom_hline(yintercept=empjaccs[2], 
+             linetype="dashed", 
+             color = turbo(11)[11], size  = 1.) +
+  annotate("text", x = 110, y = 0.6275, 
+           label = "Empirical Gen 6" , color=turbo(11)[11], 
+           size=4 , fontface="bold") +
+  annotate("text", x = 110, y = .775, 
+           label = "Empirical Gen 10" , color=turbo(11)[11], 
+           size=4 , fontface="bold")+
+  scale_x_continuous(breaks = c(seq(from = 20, 
+                                    to = 100,
+                                    by = 20),121)) 
+
+
+
+
+
 
 #################################
 
@@ -316,6 +437,14 @@ meanjac <- c(colMeans(meanjac, na.rm = T), empjaccs)
 
 data = data.frame(fitfun, Generation, nloci, meanjac)
 
+data <- data[-which(data$fitfun == "G. Empirical"),]
+data <- data[-which(data$nloci == 4970),]
+data$fitfun <-  factor(data$fitfun, 
+                       levels = sort(unique(data$fitfun)), 
+                       labels = substr(sort(unique(data$fitfun)), 
+                                       4, nchar(sort(unique(data$fitfun)))))
+
+
 plot2 <- ggplot(data, aes(y=meanjac, x=nloci)) + 
   geom_point(aes(shape=as.factor(Generation), colour=fitfun), 
              stat="identity", 
@@ -343,11 +472,26 @@ plot2 <- ggplot(data, aes(y=meanjac, x=nloci)) +
   ylim(c(0,1)) + 
   ggtitle("4977 SNPs on 121 Haplotype Blocks") + 
   scale_color_manual(values = turbo(11)[c(2,6,8,10,5,4,11)]) +
-  geom_hline(yintercept=empjaccs[1], linetype="dashed", color = turbo(11)[11]) +
-  geom_hline(yintercept=empjaccs[2], linetype="dashed", color = turbo(11)[11])
-  # scale_color_brewer(palette = "RdYlBu")
-  # scale_color_viridis(discrete = T, option = "turbo") +
-  # scale_fill_viridis(discrete = T, option = "turbo")
+  geom_hline(yintercept=empjaccs[1], 
+             linetype="dotdash", 
+             color = turbo(11)[11], size = 1.) +
+  geom_hline(yintercept=empjaccs[2], 
+             linetype="dashed", 
+             color = turbo(11)[11], size  = 1.) +
+  annotate("text", x = 4500, y = 0.555, 
+           label = "Empirical Gen 6" , color=turbo(11)[11], 
+           size=4 , fontface="bold") +
+  annotate("text", x = 4500, y = .595, 
+           label = "Empirical Gen 10" , color=turbo(11)[11], 
+           size=4 , fontface="bold") +
+  scale_x_continuous(breaks = sort(unique(data$nloci))[which(1:12 %% 2 == 0)]) 
+
+
+
+
+
+
+
 #################################
 
 grid.arrange(plot1, plot2, ncol=2, widths = c(1,1.35))
@@ -532,12 +676,87 @@ jaccards <- as.numeric(c(jaccards, empjaccs))
 title <- rep("4977 SNPs. T0=0.5", times = length(jaccards))
 data <- data.frame(treatment, generation, jaccards, title)
 totaldata <- rbind(totaldata, data)
-
+#########
 totaldata <- totaldata[-1,]
+
+hlinedf <- totaldata[which(totaldata$treatment == "G. Empirical"),]
+hlinegen10df <- hlinedf[which(hlinedf$generation == 10),]
+hlinegen6df <- hlinedf[which(hlinedf$generation == 6),]
+rm(hlinedf)
+
+totaldata <- totaldata[-which(totaldata$treatment == "G. Empirical"),]
+totaldata$treatment <- factor(totaldata$treatment, 
+                              levels = sort(unique(totaldata$treatment)), 
+                              labels = c("Multiplicative",
+                                         "Positive Epistasis", 
+                                         "Negative Epistasis", 
+                                         "Directional QT",    
+                                         "Truncating QT",
+                                         "Stabilizing QT" ))
+
+ann_text1 <- data.frame(treatment = factor("Truncating QT", 
+                                          levels = c("Multiplicative",
+                                                     "Positive Epistasis", 
+                                                     "Negative Epistasis", 
+                                                     "Directional QT",    
+                                                     "Truncating QT",
+                                                     "Stabilizing QT" )),
+                       jaccards = 0.62, 
+                       title = "121 Hap Blocks. T0=0.5",
+                       lab = "Empirical Gen 6")
+
+ann_text2 <- data.frame(treatment = factor("Truncating QT", 
+                                           levels = c("Multiplicative",
+                                                      "Positive Epistasis", 
+                                                      "Negative Epistasis", 
+                                                      "Directional QT",    
+                                                      "Truncating QT",
+                                                      "Stabilizing QT" )),
+                        jaccards = 0.76, 
+                        title = "121 Hap Blocks. T0=0.5",
+                        lab = "Empirical Gen 10")
+
+ann_text3 <- data.frame(treatment = factor("Truncating QT", 
+                                           levels = c("Multiplicative",
+                                                      "Positive Epistasis", 
+                                                      "Negative Epistasis", 
+                                                      "Directional QT",    
+                                                      "Truncating QT",
+                                                      "Stabilizing QT" )),
+                        jaccards = 0.54, 
+                        title = "4977 SNPs. T0=0.5",
+                        lab = "Empirical Gen 6")
+
+ann_text4 <- data.frame(treatment = factor("Truncating QT", 
+                                           levels = c("Multiplicative",
+                                                      "Positive Epistasis", 
+                                                      "Negative Epistasis", 
+                                                      "Directional QT",    
+                                                      "Truncating QT",
+                                                      "Stabilizing QT" )),
+                        jaccards = 0.65, 
+                        title = "4977 SNPs. T0=0.5",
+                        lab = "Empirical Gen 10")
+
+
+#######
+
 
 ggplot(totaldata, aes(y=jaccards, x=as.factor(treatment))) + 
   geom_boxplot(aes(fill=as.factor(generation)), 
                stat="boxplot", position="dodge", alpha=0.5, width=0.3) + 
+  geom_hline(data = hlinegen10df, aes(yintercept = jaccards), 
+             linetype="dashed",
+             color = turbo(11)[11]) + 
+  geom_hline(data = hlinegen6df, aes(yintercept = jaccards),
+             linetype = "dotdash",
+             color = turbo(11)[11]) +
+  # geom_hline(yintercept=empjaccs[1], 
+  #            linetype="dotdash", 
+  #            color = turbo(11)[11], size = 1.) +
+  # geom_hline(yintercept=empjaccs[2], 
+  #            linetype="dashed", 
+  #            color = turbo(11)[11], size  = 1.) +
   facet_wrap(~ title) + 
   theme_bw() + 
   theme(text=element_text(family="sans", 
@@ -549,7 +768,20 @@ ggplot(totaldata, aes(y=jaccards, x=as.factor(treatment))) +
   ylim(c(0,1)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
   scale_color_manual(values = viridis(12)[c(3,12)]) + 
-  scale_fill_manual(values = viridis(12)[c(3,12)]) 
+  scale_fill_manual(values = viridis(12)[c(3,12)]) +
+  geom_text(data = ann_text1,label = "Empirical Gen 6", 
+            color=turbo(11)[11], 
+            size=4 , fontface="bold") +
+  geom_text(data = ann_text2,label = "Empirical Gen 10", 
+            color=turbo(11)[11], 
+            size=4 , fontface="bold") + 
+  geom_text(data = ann_text3,label = "Empirical Gen 6", 
+            color=turbo(11)[11], 
+            size=4 , fontface="bold") +
+  geom_text(data = ann_text4,label = "Empirical Gen 10", 
+            color=turbo(11)[11], 
+            size=4 , fontface="bold")
+
 
 
 ###################################
@@ -747,7 +979,7 @@ legend("bottomright", legend = c("Multiplicative",
                                  "Truncating QT", 
                                  "Stabilizing QT",
                                  "Initial Distribution"),
-       col = c(turbo(11)[c(6,8,2,10,5,4)], rgb(0,0,0,0.25)), 
+       col = c(turbo(11)[c(6,8,2,4,5,10)], rgb(0,0,0,0.25)), 
        lwd = c(2,2,2,2,2,2,8),
        bg = "white", cex = 1)
 
