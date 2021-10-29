@@ -3,6 +3,7 @@ library(ggraptR)
 library(gridExtra)
 library(viridis)
 library(matrixStats)
+library(tidyr)
 dev.off()
 
 ################################
@@ -115,26 +116,28 @@ totaldata <- totaldata[-1,]
 
 totaldata$fitfun <- factor(totaldata$fitfun, 
                            levels = sort(unique(totaldata$fitfun)), 
-                           labels = c("alpha = -36.5\n", 
-                                      "alpha = 0\n    (Multiplicative)\n",
-                                      "alpha = 36.5\n", "Directional QT"))
+                           labels = c("alpha = -36.5", 
+                                      "alpha = 0\n    (Multiplicative)",
+                                      "alpha = 36.5", "Directional QT"))
+
+################################
 
 
-
-
-ggplot(totaldata, aes(y=meanjac, x=nloci)) + 
+plot1 <- ggplot(totaldata, aes(y=meanjac, x=nloci)) + 
   geom_hline(yintercept=empjaccs[1], 
              linetype="dotdash", 
-             color = turbo(11)[11], size = 1) +
+             color = turbo(11)[11], size = 0.75) +
   geom_hline(yintercept=empjaccs[2], 
              linetype="dashed", 
-             color = turbo(11)[11], size  = 1) +
-  geom_point(aes(shape=as.factor(Generation), colour=fitfun), 
+             color = turbo(11)[11], size  = 0.75) +
+  geom_point(aes(shape=as.factor(Generation), 
+                 colour=fitfun), 
              stat="identity", 
              position="identity", 
              alpha=0.6, 
              size=4) + 
-  geom_line(aes(colour=fitfun, shape = as.factor(Generation)), 
+  geom_line(aes(colour=fitfun, 
+                shape = as.factor(Generation)), 
             stat="identity", 
             position="identity", 
             alpha=0.6,
@@ -147,24 +150,22 @@ ggplot(totaldata, aes(y=meanjac, x=nloci)) +
                           hjust=0.5, 
                           vjust=0.5)) + 
   scale_size(range=c(1, 3)) + 
-  guides(shape=guide_legend(title="Generation", vjust = -10)) + 
-  guides(colour=guide_legend(title="Fitness Function")) + 
+  guides(shape=guide_legend(title="Generation", 
+                            vjust = -10)) + 
+  guides(colour="none") + 
   xlab("Number of Loci") + 
   ylab("Mean Jaccard Score") +
   scale_color_manual(values = turbo(11)[c(1,6,9,4,11)]) +
   scale_x_continuous(breaks = c(seq(from = 20, 
                                     to = 100,
                                     by = 20),121)) +
-  annotate("text", x = 130, y = 0.6275, 
-           label = "Empirical Gen 6" , color=turbo(11)[11], 
-           size=4 , fontface="bold") +
-  annotate("text", x = 130, y = .775, 
-           label = "Empirical Gen 10" , color=turbo(11)[11], 
-           size=4 , fontface="bold") + 
+  scale_y_continuous(sec.axis = sec_axis(~ ., breaks = empjaccs, 
+                                         labels = c("Empirical\nGen 6",
+                                                    "Empirical\nGen 10"))) +
   geom_errorbar(aes(colour=fitfun, 
                     ymin=L95, 
                     ymax=U95), 
-                width=0, alpha=0.5, size=1.2) + 
+                width=0, alpha=0.6, size=1.2) + 
   geom_ribbon(aes(colour=fitfun, 
                   shape = as.factor(Generation),
                   fill = fitfun,
@@ -173,7 +174,11 @@ ggplot(totaldata, aes(y=meanjac, x=nloci)) +
               alpha = 0.2, colour = NA,
               show.legend = F) + 
   coord_cartesian(xlim = c(10,121), clip = 'off') +
-  scale_fill_manual(values = turbo(11)[c(1,6,9,4,11)]) 
+  scale_fill_manual(values = turbo(11)[c(1,6,9,4,11)]) +
+  theme(axis.text.y.right = element_text(size = 12, 
+                                         face = "bold", 
+                                         color = turbo(11)[11])) +
+  theme(panel.grid = element_blank())
 
 
 
@@ -211,32 +216,160 @@ data$treatment <-  factor(data$treatment,
                                      "alpha = 8",
                                      "alpha = - 8", "alpha = 36.5"))
 
-ggplot(data, aes(y=jaccards, x=as.factor(treatment))) + 
-  geom_boxplot(aes(fill=as.factor(generation)), stat="boxplot", position="dodge", alpha=0.5, width=0.3) + 
+##################################
+
+plot2 <- ggplot(data, aes(y=jaccards, 
+                          x=as.factor(treatment))) + 
+  geom_hline(yintercept=empjaccs[1], 
+             linetype="dotdash", 
+             color = turbo(11)[11], 
+             size = .75) +
+  geom_hline(yintercept=empjaccs[2], 
+             linetype="dashed", 
+             color = turbo(11)[11], 
+             size  = .75) +
+  geom_boxplot(aes(fill=as.factor(generation)), 
+               stat="boxplot", 
+               position="dodge", 
+               alpha=1, width=0.3) + 
   theme_bw() + 
-  theme(text=element_text(family="sans", face="plain", color="#000000", size=20, hjust=0.5, vjust=0.5)) + 
+  theme(text=element_text(family="sans", 
+                          face="plain", 
+                          color="#000000", 
+                          size=20, 
+                          hjust=0.5, 
+                          vjust=0.5)) + 
   guides(fill=guide_legend(title="Generation")) + # ggtitle("121 Hap Blocks. Empirical T0") + 
   xlab("Fitness Function") + 
   ylab("Jaccard Score") + 
-  ylim(c(0,1)) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  scale_y_continuous(sec.axis = sec_axis(~ ., breaks = empjaccs, 
+                                         labels = c("Empirical\nGen 6",
+                                                    "Empirical\nGen 10")),
+                     limits = c(0,1)) +
+  theme(axis.text.x = element_text(angle = 45, 
+                                   vjust = 1, 
+                                   hjust=1)) +
   scale_color_manual(values = viridis(12)[c(3,12)]) + 
   scale_fill_manual(values = viridis(12)[c(3,12)]) +
-  geom_hline(yintercept=empjaccs[1], 
-             linetype="dotdash", 
-             color = turbo(11)[11], size = 1.) +
-  geom_hline(yintercept=empjaccs[2], 
-             linetype="dashed", 
-             color = turbo(11)[11], size  = 1.) +
-  annotate("text", x = 1.1, y = 0.6275, 
-           label = "Empirical Gen 6" , color=turbo(11)[11], 
-           size=4 , fontface="bold") +
-  annotate("text", x = 1.1, y = .775, 
-           label = "Empirical Gen 10" , color=turbo(11)[11], 
-           size=4 , fontface="bold")
+  theme(axis.text.y.right = element_text(size = 12, 
+                                         face = "bold", 
+                                         color = turbo(11)[11])) +
+  theme(panel.grid = element_blank())
 
 
 
+
+
+
+###################################
+## Main: Replicate Freq Spectrum ##
+###################################
+
+setwd("~/Documents/GitHub/EpistasisSim/SFS")
+load(file = "sim.results.RData")
+
+plotdat <- data.frame("Group" = c(rep("B. Multiplicative", length(sim.results$`alpha=0`)),
+                                  rep("C. Positive Epistasis", length(sim.results$`alpha=36.5629892630851`)),
+                                  rep("A. Directional QT", length(sim.results$directional)),
+                                  rep("D. Empirical", length(sim.results$empirical))),
+                      "Proportion" = c(sim.results$`alpha=0`,
+                                       sim.results$`alpha=36.5629892630851`,
+                                       sim.results$directional,
+                                       sim.results$empirical))
+plotdat$Group <- factor(plotdat$Group, 
+                        levels = sort(unique(plotdat$Group)),
+                        labels = c("Directional QT", 
+                                   "Multiplicative\n(alpha = 0)",
+                                   "Positive Epistasis\n(alpha = 36.5)",
+                                   "Empirical"))
+
+###################################
+
+# ggplot(plotdat, aes(x=Proportion, fill=Group)) +
+#   geom_histogram(aes(y=..density..),
+#                  stat="bin",
+#                  position=position_dodge2(reverse = FALSE,preserve ="single"),
+#                  alpha=1,
+#                  breaks = sort(c(unique(plotdat$Proportion) + 0.045,
+#                                  unique(plotdat$Proportion) - 0.045)),
+#                  center = 1) +
+#   theme_bw() +
+#   theme(text=element_text(family="sans",
+#                           face="plain",
+#                           color="#000000",
+#                           size=15, hjust=0.5, vjust=0.5)) +
+#   guides(fill=guide_legend(title="Fitness Function")) +
+#   xlab("Proportion") +
+#   ylab("Density") +
+#   scale_fill_manual("Group",values=turbo(11)[c(4,6,9,11)]) +
+#   scale_x_continuous(breaks = sort(unique(plotdat$Proportion))) +
+#   theme(panel.grid = element_blank())
+
+plotdat2 <- plotdat %>% 
+  dplyr::count(Proportion, Group) %>% 
+  complete(Group, Proportion, fill = list(n=0)) %>%
+  group_by(Group) %>% 
+  mutate(Prop = n/sum(n))
+ggplot(plotdat2, aes(x=as.character(8 * Proportion), fill=Group)) +
+  geom_bar(aes(y=Prop),
+           stat = "identity",
+           position=position_dodge2(reverse = FALSE,preserve ="single"),
+           width = .7) +
+  # geom_histogram(aes(y=..density..),
+  #                stat="bin",
+  #                position=position_dodge2(reverse = FALSE,preserve ="single"),
+  #                alpha=1,
+  #                breaks = sort(c(unique(plotdat$Proportion) + 0.045,
+  #                                unique(plotdat$Proportion) - 0.045)),
+  #                center = 1) +
+  theme_bw() +
+  theme(text=element_text(family="sans",
+                          face="plain",
+                          color="#000000",
+                          size=15, hjust=0.5, vjust=0.5)) +
+  guides(fill=guide_legend(title="Fitness Function")) +
+  xlab("Number of Lines") +
+  ylab("Proportion of Hap Blocks") +
+  scale_fill_manual("Group",values=turbo(11)[c(4,6,9,11)]) +
+  # scale_x_continuous(breaks = sort(unique(plotdat$Proportion))) +
+  theme(panel.grid = element_blank())
+
+
+
+
+plot3 <- ggplot(plotdat2, aes(x=(8 * Proportion), color=Group)) +
+  geom_point(aes(y=Prop), 
+             stat="identity", 
+             position="identity", 
+             alpha=0.6, 
+             size=4) + 
+  geom_line(aes(y=Prop), 
+            stat="identity", 
+            position="identity", 
+            alpha=0.6,
+            size = 1.25) + 
+  theme_bw() + 
+  theme(text=element_text(family="sans", 
+                          face="plain", 
+                          color="#000000", 
+                          size=15, hjust=0.5, vjust=0.5)) + 
+  guides(fill=guide_legend(title="Fitness Function")) + 
+  xlab("Number of Lines") + 
+  ylab("Proportion of SNPs") + 
+  scale_color_manual("Group",values=turbo(11)[c(1,4,6,9,11)],
+                     limits = c("alpha = - 36.5", "Directional QT", 
+                                "Multiplicative\n(alpha = 0)",
+                                "Positive Epistasis\n(alpha = 36.5)",
+                                "Empirical")) +
+  scale_x_continuous(breaks = 8 * sort(unique(plotdat$Proportion))) + 
+  theme(panel.grid = element_blank()) 
+
+
+
+
+###################################
+
+plot1 + plot2 + plot3
 ################################
 ## Supplement: alpha analysis ##
 ################################
@@ -278,17 +411,24 @@ data$fitfun <-  factor(data$fitfun,
                        labels = substr(sort(unique(data$fitfun)), 
                                        4, nchar(sort(unique(data$fitfun)))))
 
+################################
 
 ggplot(data, aes(y=meanjac, x=nloci)) + 
+  geom_hline(yintercept=empjaccs[1], 
+             linetype="dotdash", 
+             color = turbo(11)[11], size = 0.75) +
+  geom_hline(yintercept=empjaccs[2], 
+             linetype="dashed", 
+             color = turbo(11)[11], size  = 0.75) +
   geom_point(aes(shape=as.factor(Generation), colour=fitfun), 
              stat="identity", 
              position="identity", 
-             alpha=0.5, 
+             alpha=0.6, 
              size=4) + 
   geom_line(aes(colour=fitfun, shape = as.factor(Generation)), 
             stat="identity", 
             position="identity", 
-            alpha=0.5,
+            alpha=0.6,
             size = 1.25) + 
   theme_bw() + 
   theme(text=element_text(family="sans", 
@@ -303,21 +443,17 @@ ggplot(data, aes(y=meanjac, x=nloci)) +
   xlab("Number of Loci") + 
   ylab("Mean Jaccard Score") +
   scale_color_manual(values = turbo(11)[c(1,2,3,6,7,8,9,11)]) +
-  geom_hline(yintercept=empjaccs[1], 
-             linetype="dotdash", 
-             color = turbo(11)[11], size = 1.) +
-  geom_hline(yintercept=empjaccs[2], 
-             linetype="dashed", 
-             color = turbo(11)[11], size  = 1.) +
-  annotate("text", x = 25, y = 0.6275, 
-           label = "Empirical Gen 6" , color=turbo(11)[11], 
-           size=4 , fontface="bold") +
-  annotate("text", x = 25, y = .775, 
-           label = "Empirical Gen 10" , color=turbo(11)[11], 
-           size=4 , fontface="bold") +
+  scale_y_continuous(sec.axis = sec_axis(~ ., breaks = empjaccs, 
+                                         labels = c("Empirical\nGen 6",
+                                                    "Empirical\nGen 10")),
+                     limits = c(0,1)) +
   scale_x_continuous(breaks = c(seq(from = 20, 
                                     to = 100,
-                                    by = 20),121)) 
+                                    by = 20),121)) +
+  theme(axis.text.y.right = element_text(size = 12, 
+                                         face = "bold", 
+                                         color = turbo(11)[11])) +
+  theme(panel.grid = element_blank())
 
 
 
@@ -360,15 +496,21 @@ data <- data[-which(data$fitfun == "G. Empirical"),]
 data <- data[-which(data$nloci == 120),]
 
 plot1 <- ggplot(data, aes(y=meanjac, x=nloci)) + 
+  geom_hline(yintercept=empjaccs[1], 
+             linetype="dotdash", 
+             color = turbo(11)[11], size = 0.75) +
+  geom_hline(yintercept=empjaccs[2], 
+             linetype="dashed", 
+             color = turbo(11)[11], size  = 0.75) +
   geom_point(aes(shape=as.factor(Generation), colour=fitfun), 
              stat="identity", 
              position="identity", 
-             alpha=0.5, 
+             alpha=0.6, 
              size=4) + 
   geom_line(aes(colour=fitfun, shape = as.factor(Generation)), 
             stat="identity", 
             position="identity", 
-            alpha=0.5,
+            alpha=0.6,
             size = 1.25) + 
   theme_bw() + 
   theme(text=element_text(family="sans", 
@@ -385,12 +527,6 @@ plot1 <- ggplot(data, aes(y=meanjac, x=nloci)) +
   ylim(c(0,1)) + 
   ggtitle("121 Haplotype Blocks") +
   scale_color_manual(values = turbo(11)[c(2,6,8,10,5,4,11)]) +
-  geom_hline(yintercept=empjaccs[1], 
-             linetype="dotdash", 
-             color = turbo(11)[11], size = 1.) +
-  geom_hline(yintercept=empjaccs[2], 
-             linetype="dashed", 
-             color = turbo(11)[11], size  = 1.) +
   annotate("text", x = 110, y = 0.6275, 
            label = "Empirical Gen 6" , color=turbo(11)[11], 
            size=4 , fontface="bold") +
@@ -399,7 +535,8 @@ plot1 <- ggplot(data, aes(y=meanjac, x=nloci)) +
            size=4 , fontface="bold")+
   scale_x_continuous(breaks = c(seq(from = 20, 
                                     to = 100,
-                                    by = 20),121)) 
+                                    by = 20),121)) +
+  theme(panel.grid = element_blank())
 
 
 
@@ -446,15 +583,21 @@ data$fitfun <-  factor(data$fitfun,
 
 
 plot2 <- ggplot(data, aes(y=meanjac, x=nloci)) + 
+  geom_hline(yintercept=empjaccs[1], 
+             linetype="dotdash", 
+             color = turbo(11)[11], size = 1.) +
+  geom_hline(yintercept=empjaccs[2], 
+             linetype="dashed", 
+             color = turbo(11)[11], size  = 1.) +
   geom_point(aes(shape=as.factor(Generation), colour=fitfun), 
              stat="identity", 
              position="identity", 
-             alpha=0.5, 
+             alpha=0.6, 
              size=4) + 
   geom_line(aes(colour=fitfun, shape = as.factor(Generation)), 
             stat="identity", 
             position="identity", 
-            alpha=0.5,
+            alpha=0.6,
             size = 1.25) + 
   theme_bw() + 
   theme(text=element_text(family="sans", 
@@ -472,19 +615,14 @@ plot2 <- ggplot(data, aes(y=meanjac, x=nloci)) +
   ylim(c(0,1)) + 
   ggtitle("4977 SNPs on 121 Haplotype Blocks") + 
   scale_color_manual(values = turbo(11)[c(2,6,8,10,5,4,11)]) +
-  geom_hline(yintercept=empjaccs[1], 
-             linetype="dotdash", 
-             color = turbo(11)[11], size = 1.) +
-  geom_hline(yintercept=empjaccs[2], 
-             linetype="dashed", 
-             color = turbo(11)[11], size  = 1.) +
   annotate("text", x = 4500, y = 0.555, 
            label = "Empirical Gen 6" , color=turbo(11)[11], 
            size=4 , fontface="bold") +
   annotate("text", x = 4500, y = .595, 
            label = "Empirical Gen 10" , color=turbo(11)[11], 
            size=4 , fontface="bold") +
-  scale_x_continuous(breaks = sort(unique(data$nloci))[which(1:12 %% 2 == 0)]) 
+  scale_x_continuous(breaks = sort(unique(data$nloci))[which(1:12 %% 2 == 0)]) +
+  theme(panel.grid = element_blank())
 
 
 
@@ -676,9 +814,9 @@ jaccards <- as.numeric(c(jaccards, empjaccs))
 title <- rep("4977 SNPs. T0=0.5", times = length(jaccards))
 data <- data.frame(treatment, generation, jaccards, title)
 totaldata <- rbind(totaldata, data)
-#########
-totaldata <- totaldata[-1,]
 
+totaldata <- totaldata[-1,]
+####################################
 hlinedf <- totaldata[which(totaldata$treatment == "G. Empirical"),]
 hlinegen10df <- hlinedf[which(hlinedf$generation == 10),]
 hlinegen6df <- hlinedf[which(hlinedf$generation == 6),]
@@ -695,15 +833,15 @@ totaldata$treatment <- factor(totaldata$treatment,
                                          "Stabilizing QT" ))
 
 ann_text1 <- data.frame(treatment = factor("Truncating QT", 
-                                          levels = c("Multiplicative",
-                                                     "Positive Epistasis", 
-                                                     "Negative Epistasis", 
-                                                     "Directional QT",    
-                                                     "Truncating QT",
-                                                     "Stabilizing QT" )),
-                       jaccards = 0.62, 
-                       title = "121 Hap Blocks. T0=0.5",
-                       lab = "Empirical Gen 6")
+                                           levels = c("Multiplicative",
+                                                      "Positive Epistasis", 
+                                                      "Negative Epistasis", 
+                                                      "Directional QT",    
+                                                      "Truncating QT",
+                                                      "Stabilizing QT" )),
+                        jaccards = 0.62, 
+                        title = "121 Hap Blocks. T0=0.5",
+                        lab = "Empirical Gen 6")
 
 ann_text2 <- data.frame(treatment = factor("Truncating QT", 
                                            levels = c("Multiplicative",
@@ -737,58 +875,69 @@ ann_text4 <- data.frame(treatment = factor("Truncating QT",
                         jaccards = 0.65, 
                         title = "4977 SNPs. T0=0.5",
                         lab = "Empirical Gen 10")
+totaldata <- totaldata[-which(is.na(totaldata$jaccards)),]
+pointrangedata <- totaldata %>% group_by(treatment, generation, title) %>% 
+  summarize(jaccard.mean = mean(jaccards),
+            jaccard.max = max(jaccards),
+            jaccard.min = min(jaccards))
 
+####################################
 
-#######
-
-
-ggplot(totaldata, aes(y=jaccards, x=as.factor(treatment))) + 
-  geom_boxplot(aes(fill=as.factor(generation)), 
-               stat="boxplot", position="dodge", alpha=0.5, width=0.3) + 
+ggplot(pointrangedata, aes(x=as.factor(treatment))) +
   geom_hline(data = hlinegen10df, aes(yintercept = jaccards), 
              linetype="dashed",
-             color = turbo(11)[11]) + 
+             color = turbo(11)[11], 
+             size = .75) + 
   geom_hline(data = hlinegen6df, aes(yintercept = jaccards),
              linetype = "dotdash",
-             color = turbo(11)[11]) +
-  # geom_hline(yintercept=empjaccs[1], 
-  #            linetype="dotdash", 
-  #            color = turbo(11)[11], size = 1.) +
-  # geom_hline(yintercept=empjaccs[2], 
-  #            linetype="dashed", 
-  #            color = turbo(11)[11], size  = 1.) +
+             color = turbo(11)[11], 
+             size = .75) +
+  geom_pointrange(aes(y=jaccard.mean, 
+                      ymin=jaccard.min, 
+                      ymax=jaccard.max,
+                      color=as.factor(generation)), 
+                  position=position_dodge(width = 0.3), 
+                  size = 1,
+                  fatten = 2,
+                  alpha = 0.6)+
   facet_wrap(~ title) + 
   theme_bw() + 
   theme(text=element_text(family="sans", 
                           face="plain", color="#000000", 
                           size=20, hjust=0.5, vjust=0.5)) + 
-  guides(fill=guide_legend(title="Generation")) + 
+  guides(color=guide_legend(title="Generation")) + 
   xlab("Fitness function") + 
   ylab("Jaccard Score") +
   ylim(c(0,1)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
-  scale_color_manual(values = viridis(12)[c(3,12)]) + 
-  scale_fill_manual(values = viridis(12)[c(3,12)]) +
-  geom_text(data = ann_text1,label = "Empirical Gen 6", 
+  scale_color_manual(values = viridis(12)[c(3,7)]) + 
+  scale_fill_manual(values = viridis(12)[c(3,7)]) +
+  geom_text(data = ann_text1,
+            aes(y=jaccards),
+            label = "Empirical Gen 6", 
             color=turbo(11)[11], 
             size=4 , fontface="bold") +
-  geom_text(data = ann_text2,label = "Empirical Gen 10", 
+  geom_text(data = ann_text2,
+            aes(y=jaccards),
+            label = "Empirical Gen 10", 
             color=turbo(11)[11], 
             size=4 , fontface="bold") + 
-  geom_text(data = ann_text3,label = "Empirical Gen 6", 
+  geom_text(data = ann_text3,
+            aes(y=jaccards),
+            label = "Empirical Gen 6", 
             color=turbo(11)[11], 
             size=4 , fontface="bold") +
-  geom_text(data = ann_text4,label = "Empirical Gen 10", 
+  geom_text(data = ann_text4,
+            aes(y=jaccards),
+            label = "Empirical Gen 10", 
             color=turbo(11)[11], 
-            size=4 , fontface="bold")
+            size=4 , fontface="bold") + 
+  theme(panel.grid.minor  = element_blank())
 
 
 
 ###################################
 ## Supplement: Fitness Functions ##
-###################################
-
-par(mar=c(4.0, 4.0, 1.5, 1.5), mfrow = c(2,2))
 ###################################
 
 nmuts <- 1:121
@@ -804,8 +953,15 @@ ub <- max(positive, negative, multiplicative)
 positive <- positive / max(positive)
 multiplicative <- multiplicative / max(multiplicative)
 negative <- negative / max(negative)
+###################################
+linesdat = data.frame(title = rep(c("121 Haplotype Blocks. Multiplicative Fitness Functions"), times = (3 * 121)),
+                      relfit = c(positive, multiplicative, negative),
+                      pheno = rep(x, times = 3),
+                      fitfun = rep(c("Positive Epistasis", 
+                                     "Multiplicative",
+                                     "Negative"), each = 121))
 
-
+###################################
 plot(x = x, y = log10(positive), col = turbo(11)[8], type = "l" , xlab = "Phenotype",
      ylab = "log(Relative Fitness)", lwd = 2, ylim = c(-10,0), cex.lab = 1.25, 
      cex.axis = 1.5)
@@ -837,6 +993,20 @@ lines(x=ci, y = y, lwd = 8, col = turbo(11, alpha = 0.25)[6])
 ci <- seq(from = 0.29318, to = 0.402245, length.out = 3)
 y <- rep(-9.5, times = length(ci))
 lines(x=ci, y = y, lwd = 8, col = turbo(11, alpha = 0.25)[2])
+###################################
+rangesdat <- data.frame(title = rep(c("121 Haplotype Blocks. Multiplicative Fitness Functions"), times = 4),
+                        xmin = c(0.223786, 0.380902, 0.331542, 0.29318),
+                        xmax = c(0.325956, 0.495603, 0.445071, 0.402245),
+                        y = c(-10, -8.5, -9, -9.5),
+                        fitfun = c("Initial", 
+                                   "Positive Epistasis", 
+                                   "Multiplicative",
+                                   "Negative Epistasis"))
+vlinesdat <- data.frame(title = rep(c("121 Haplotype Blocks. Multiplicative Fitness Functions"), times = 2),
+                        xint = c(0.223786, 0.325956),
+                        fitfun = rep("Initial", times = 2))
+
+rm(list = ls()[-c(3,8,10)])
 
 ###################################
 x <- seq(from = 0, to = 1, length.out = 200)
@@ -859,6 +1029,20 @@ mu <- 0.4
 std <- 0.07
 StabilizingEpistasis = exp(-0.5 * ((x - mu)^2 / std ^ 2));
 
+###################################
+
+
+
+linesdatadd <- data.frame(title = rep("121 Haplotype Blocks. Quantative Fitness Functions", times = (3 * 200)),
+                          relfit = c(DirectionalEpistasis, TruncatingEpistasis, StabilizingEpistasis),
+                          pheno = rep(x, times = 3),
+                          fitfun = rep(c("Directional QT",
+                                         "Truncating QT",
+                                         "Stabilizing QT"), each = 200))
+
+linesdat <- rbind(linesdat, linesdatadd)
+
+###################################
 
 plot(x = x, y = log10(DirectionalEpistasis), type = "l", col = turbo(11)[4], 
      xlab = "Phenotype", ylab = "log(Relative Fitness)", lwd = 2,
@@ -894,6 +1078,27 @@ ci <- seq(from = 0.314602, to = 0.418423, length.out = 3)
 y <- rep(-8.5, times = length(ci))
 lines(x = ci, y = y, lwd = 8, col = turbo(11, alpha = 0.25)[5])
 
+
+###################################
+
+rangesdatadd <- data.frame(title = rep(c("121 Haplotype Blocks. Quantative Fitness Functions"), times = 4),
+                           xmin = c(0.223786, 0.300193, 0.297201, 0.314602),
+                           xmax = c(0.325956, 0.406439, 0.402461, 0.418423),
+                           y = c(-10, -9.5, -9, -8.5),
+                           fitfun = c("Initial",
+                                      "Directional QT",
+                                      "Truncating QT",
+                                      "Stabilizing QT"))
+rangesdat <- rbind(rangesdat, rangesdatadd)
+
+
+vlinesdatadd <- data.frame(title = rep("121 Haplotype Blocks. Quantative Fitness Functions", times = 2),
+                           xint = c(0.223786, 0.325956),
+                           fitfun = rep("Initial", times = 2))
+vlinesdat <- rbind(vlinesdat, vlinesdatadd)
+
+rm(list = ls()[-c(7,11,18)])
+
 ###################################
 
 nmuts <- 1:121
@@ -909,6 +1114,19 @@ ub <- max(positive, negative, multiplicative)
 positive <- positive / max(positive[1:121])
 multiplicative <- multiplicative / max(multiplicative[1:121])
 negative <- negative / max(negative[1:121])
+
+###################################
+
+
+linesdatadd <- data.frame(title = rep("4977 SNPs on 121 Haplotype Blocks. Multiplicative Fitness Functions", times = 121),
+                          relfit = c(positive, multiplicative, negative),
+                          pheno = rep(x, times = 3),
+                          fitfun = rep(c("Positive Epistasis", 
+                                         "Multiplicative",
+                                         "Negative"), each = 121))
+linesdat <- rbind(linesdat, linesdatadd)
+
+###################################
 
 
 plot(x = x, y =  log10(positive), col = turbo(11)[8], type = "l" , xlab = "Phenotype",
@@ -945,6 +1163,25 @@ lines(x=ci, y = y, lwd = 8, col = turbo(11, alpha = 0.25)[2])
 
 ###################################
 
+rangesdatadd <- data.frame(title = rep("4977 SNPs on 121 Haplotype Blocks. Multiplicative Fitness Functions", times = 4),
+                           xmin = c(0.392263, 0.433199, 0.432522, 0.430782),
+                           xmax = c(0.403815, 0.443856, 0.444504, 0.441271),
+                           y = c(-10, -8.5, -9, -9.5),
+                           fitfun = c("Initial", 
+                                      "Positive Epistasis", 
+                                      "Multiplicative",
+                                      "Negative Epistasis"))
+rangesdat <- rbind(rangesdat, rangesdatadd)
+
+
+vlinesdatadd <- data.frame(title = rep("4977 SNPs on 121 Haplotype Blocks. Multiplicative Fitness Functions", times = 2),
+                           xint = c(0.392263, 0.403815),
+                           fitfun = rep("Initial", times = 2))
+vlinesdat <- rbind(vlinesdat, vlinesdatadd)
+
+rm(list = ls()[-c(4,10,13)])
+###################################
+
 x <- seq(from = 0, to = 1, length.out = 200)
 
 fmin = 0
@@ -965,6 +1202,19 @@ mu <- 0.435
 std <- 0.0175
 StabilizingEpistasis = exp(-0.5 * ((x - mu)^2 / std ^ 2));
 
+###################################
+
+linesdatadd <- data.frame(title = rep("4977 SNPs on 121 Haplotype Blocks. Quantative Fitness Functions", times = (3 * 200)),
+                          relfit = c(DirectionalEpistasis, TruncatingEpistasis, StabilizingEpistasis),
+                                                     pheno = rep(x, times = 3),
+                                                     fitfun = rep(c("Directional QT",
+                                                                    "Truncating QT",
+                                                                    "Stabilizing QT"), each = 200))
+
+linesdat <- rbind(linesdat, linesdatadd)
+
+
+###################################
 
 plot(x = x, y =  log10(DirectionalEpistasis), type = "l", col = turbo(11)[4], 
      xlab = "Phenotype", ylab = "log(Relative Fitness)", lwd = 2,
@@ -1006,4 +1256,99 @@ lines(x = ci, y = y, lwd = 8, col = turbo(11, alpha = 0.25)[5])
 
 ###################################
 
+rangesdatadd <- data.frame(title = rep(c("4977 SNPs on 121 Haplotype Blocks. Quantative Fitness Functions"), times = 4),
+                           xmin = c(0.392263, 0.401406, 0.401266, 0.401696),
+                           xmax = c(0.403815, 0.412646, 0.412542, 0.412732),
+                           y = c(-10, -9.5, -9, -8.5),
+                           fitfun = c("Initial",
+                                      "Directional QT",
+                                      "Truncating QT",
+                                      "Stabilizing QT"))
+rangesdat <- rbind(rangesdat, rangesdatadd)
+
+
+vlinesdatadd <- data.frame(title = rep("4977 SNPs on 121 Haplotype Blocks. Quantative Fitness Functions", times = 2),
+                           xint = c(0.392263, 0.403815),
+                           fitfun = rep("Initial", times = 2))
+vlinesdat <- rbind(vlinesdat, vlinesdatadd)
+
+rm(list = ls()[-c(7,11,18)])
+###################################
+
+linesdat$fitfun <- factor(linesdat$fitfun, 
+                              levels = c("Multiplicative",
+                                         "Positive Epistasis", 
+                                         "Negative", 
+                                         "Directional QT",    
+                                         "Truncating QT",
+                                         "Stabilizing QT"), 
+                              labels = c("Multiplicative",
+                                         "Positive Epistasis", 
+                                         "Negative Epistasis", 
+                                         "Directional QT",    
+                                         "Truncating QT",
+                                         "Stabilizing QT"))
+rangesdat$fitfun <- factor(rangesdat$fitfun, 
+                           levels = c("Multiplicative",
+                                      "Positive Epistasis", 
+                                      "Negative Epistasis", 
+                                      "Directional QT",    
+                                      "Truncating QT",
+                                      "Stabilizing QT"), 
+                           labels = c("Multiplicative",
+                                      "Positive Epistasis", 
+                                      "Negative Epistasis", 
+                                      "Directional QT",    
+                                      "Truncating QT",
+                                      "Stabilizing QT"))
+
+vlinesdat$fitfun <- factor(vlinesdat$fitfun, 
+                           levels = c("Multiplicative",
+                                      "Positive Epistasis", 
+                                      "Negative Epistasis", 
+                                      "Directional QT",    
+                                      "Truncating QT",
+                                      "Stabilizing QT"), 
+                           labels = c("Multiplicative",
+                                      "Positive Epistasis", 
+                                      "Negative Epistasis", 
+                                      "Directional QT",    
+                                      "Truncating QT",
+                                      "Stabilizing QT"))
+
+###################################
+
+ggplot(linesdat, aes(y=log10(relfit), x=pheno)) + 
+  geom_line(aes(colour=fitfun), 
+            stat="identity", 
+            position="identity", 
+            alpha=0.6,
+            size = 1.25) + 
+  facet_wrap(~ title) + 
+  theme_bw() + 
+  theme(text=element_text(family="sans", 
+                          face="plain", 
+                          color="#000000", 
+                          size=15, 
+                          hjust=0.5, 
+                          vjust=0.5)) + 
+  xlab("Phenotype") + 
+  ylab("log(Relative Fitness)") +
+  theme(panel.grid = element_blank()) + 
+  guides(color=guide_legend(title="Fitness Function")) +
+  coord_cartesian(ylim = c(-10,0), clip = 'on') +
+  geom_vline(data = vlinesdat, aes(color = fitfun,
+                            xintercept=xint),
+             linetype="dashed") + 
+  scale_color_manual("Group",values=c(turbo(11)[c(6,8,2,4,5,10)], rgb(0,0,0,0.15)),
+                     limits = c(as.character(sort(unique(linesdat$fitfun))), 
+                                "Initial")) + 
+  geom_segment(data = rangesdat, aes(color = fitfun,
+                                     x = xmin,
+                                     xend = xmax,
+                                     y = y,
+                                     yend = y),
+                                     size = 3,
+               lineend = "round")
+## unique adaptive genomic architecture
 
