@@ -4,6 +4,7 @@ library(gridExtra)
 library(viridis)
 library(matrixStats)
 library(tidyr)
+library(patchwork)
 dev.off()
 
 ################################
@@ -134,7 +135,7 @@ plot1 <- ggplot(totaldata, aes(y=meanjac, x=nloci)) +
                  colour=fitfun), 
              stat="identity", 
              position="identity", 
-             alpha=0.6, 
+             alpha=1, 
              size=4) + 
   geom_line(aes(colour=fitfun, 
                 shape = as.factor(Generation)), 
@@ -150,22 +151,23 @@ plot1 <- ggplot(totaldata, aes(y=meanjac, x=nloci)) +
                           hjust=0.5, 
                           vjust=0.5)) + 
   scale_size(range=c(1, 3)) + 
-  guides(shape=guide_legend(title="Generation", 
-                            vjust = -10)) + 
-  guides(colour="none") + 
+  guides(shape=guide_legend(title = "Generation",
+                                                        override.aes = list(alpha=1))) + 
+  theme(legend.position = "bottom") +
+  guides(colour = "none") + 
   xlab("Number of Loci") + 
   ylab("Mean Jaccard Score") +
   scale_color_manual(values = turbo(11)[c(1,6,9,4,11)]) +
   scale_x_continuous(breaks = c(seq(from = 20, 
                                     to = 100,
                                     by = 20),121)) +
-  scale_y_continuous(sec.axis = sec_axis(~ ., breaks = empjaccs, 
-                                         labels = c("Empirical\nGen 6",
-                                                    "Empirical\nGen 10"))) +
+  # scale_y_continuous(sec.axis = sec_axis(~ ., breaks = empjaccs, 
+  #                                        labels = c("Empirical\nGen 6",
+  #                                                   "Empirical\nGen 10"))) +
   geom_errorbar(aes(colour=fitfun, 
                     ymin=L95, 
                     ymax=U95), 
-                width=0, alpha=0.6, size=1.2) + 
+                width=0, alpha=1, size=1.2) + 
   geom_ribbon(aes(colour=fitfun, 
                   shape = as.factor(Generation),
                   fill = fitfun,
@@ -178,6 +180,8 @@ plot1 <- ggplot(totaldata, aes(y=meanjac, x=nloci)) +
   theme(axis.text.y.right = element_text(size = 12, 
                                          face = "bold", 
                                          color = turbo(11)[11])) +
+  theme(axis.text.y.left = element_blank()) +
+  theme(axis.title.y.left = element_blank()) +
   theme(panel.grid = element_blank())
 
 
@@ -187,6 +191,8 @@ plot1 <- ggplot(totaldata, aes(y=meanjac, x=nloci)) +
 ###################################
 ## Main Text: Epistasis Analysis ##
 ##################################
+
+totaldata <- array()
 
 setwd("~/Documents/GitHub/EpistasisSim/alphaComparison")
 empjaccs <- readRDS(file = 'hap_blocks.jaccard.neutral999.RDS')
@@ -210,15 +216,49 @@ for(i in 1:8){
 jaccards <- as.numeric(c(jaccards))
 data <- data.frame(treatment, generation, jaccards)
 
-data$treatment <-  factor(data$treatment, 
-                          levels = sort(unique(data$treatment)), 
+totaldata <- rbind(totaldata, data)
+
+setwd("~/Documents/GitHub/EpistasisSim/EmpT0hb")
+empjaccs <- readRDS(file = 'hap_blocks.jaccard.neutral999.RDS')
+tmp <- c(mean(empjaccs[[1]]), mean(empjaccs[[2]]))
+empjaccs <- tmp
+rm(tmp)
+jaccmatrix <- as.matrix(fread(file = 'sim.results.csv'))
+jaccmatrix <- jaccmatrix[-1,-1]
+
+treatment <- c(rep(c("B. Positive Epistasis",
+                     "C. Negative Epistasis",
+                     "A. Multiplicative",
+                     "D. Directional QT",
+                     "E. Truncating QT",
+                     "F. Stabilizing QT"), each = 2000),
+               rep("G. Empirical", each = 2))
+
+generation <- c(rep(c(6,10), each = 1000, times = 6), 
+                c(6,10))
+
+jaccards <- c()
+for(i in 1:12){
+  jaccards <- c(jaccards, jaccmatrix[3:1002,i])
+}
+jaccards <- as.numeric(c(jaccards, empjaccs))
+title <- rep("121 Hap Blocks. Empirical T0", times = length(jaccards))
+data <- data.frame(treatment, generation, jaccards)
+
+totaldata <- rbind(totaldata, data)
+totaldata <- totaldata[-1,]
+totaldata <- totaldata[which(totaldata$treatment == "D. alpha = 36.5" |
+                               totaldata$treatment == "A. alpha = 0\n    (Multiplicative)" |
+                               totaldata$treatment == "D. Directional QT"),]
+
+totaldata$treatment <-  factor(totaldata$treatment, 
+                          levels = sort(unique(totaldata$treatment)), 
                           labels = c("alpha = 0\n(Multiplicative)", 
-                                     "alpha = 8",
-                                     "alpha = - 8", "alpha = 36.5"))
+                                     "alpha = 36.5", "Directional QT"))
 
 ##################################
 
-plot2 <- ggplot(data, aes(y=jaccards, 
+plot2 <- ggplot(totaldata, aes(y=jaccards, 
                           x=as.factor(treatment))) + 
   geom_hline(yintercept=empjaccs[1], 
              linetype="dotdash", 
@@ -239,9 +279,9 @@ plot2 <- ggplot(data, aes(y=jaccards,
                           size=20, 
                           hjust=0.5, 
                           vjust=0.5)) + 
-  guides(fill=guide_legend(title="Generation")) + # ggtitle("121 Hap Blocks. Empirical T0") + 
+  guides(fill=guide_legend(title="Generation")) +
   xlab("Fitness Function") + 
-  ylab("Jaccard Score") + 
+  ylab("Mean Jaccard Score") + 
   scale_y_continuous(sec.axis = sec_axis(~ ., breaks = empjaccs, 
                                          labels = c("Empirical\nGen 6",
                                                     "Empirical\nGen 10")),
@@ -254,7 +294,8 @@ plot2 <- ggplot(data, aes(y=jaccards,
   theme(axis.text.y.right = element_text(size = 12, 
                                          face = "bold", 
                                          color = turbo(11)[11])) +
-  theme(panel.grid = element_blank())
+  theme(panel.grid = element_blank()) + 
+  theme(legend.position = "bottom")
 
 
 
@@ -310,7 +351,19 @@ plotdat2 <- plotdat %>%
   complete(Group, Proportion, fill = list(n=0)) %>%
   group_by(Group) %>% 
   mutate(Prop = n/sum(n))
-ggplot(plotdat2, aes(x=as.character(8 * Proportion), fill=Group)) +
+
+plotdat2$Generation <- rep(c(6,10), times = 18)
+plotdat2$Gen <- rep(10, times = 36)
+# plotdat2 <- rbind(plotdat2,
+#                   data.frame(Group = "Directional QT",
+#                              Proportion = 0,
+#                              n = 0, 
+#                              Prop = 0,
+#                              Generation = 6,
+#                              Gen = 6))
+
+
+plot3 <- ggplot(plotdat2, aes(x=(8 * Proportion), fill=Group)) +
   geom_bar(aes(y=Prop),
            stat = "identity",
            position=position_dodge2(reverse = FALSE,preserve ="single"),
@@ -326,50 +379,81 @@ ggplot(plotdat2, aes(x=as.character(8 * Proportion), fill=Group)) +
   theme(text=element_text(family="sans",
                           face="plain",
                           color="#000000",
-                          size=15, hjust=0.5, vjust=0.5)) +
-  guides(fill=guide_legend(title="Fitness Function")) +
+                          size=20, hjust=0.5, vjust=0.5)) +
+  guides(color=guide_legend(title="Fitness Function")) +
   xlab("Number of Lines") +
   ylab("Proportion of Hap Blocks") +
-  scale_fill_manual("Group",values=turbo(11)[c(4,6,9,11)]) +
   # scale_x_continuous(breaks = sort(unique(plotdat$Proportion))) +
-  theme(panel.grid = element_blank())
-
-
-
-
-plot3 <- ggplot(plotdat2, aes(x=(8 * Proportion), color=Group)) +
-  geom_point(aes(y=Prop), 
-             stat="identity", 
-             position="identity", 
-             alpha=0.6, 
-             size=4) + 
-  geom_line(aes(y=Prop), 
-            stat="identity", 
-            position="identity", 
-            alpha=0.6,
-            size = 1.25) + 
-  theme_bw() + 
-  theme(text=element_text(family="sans", 
-                          face="plain", 
-                          color="#000000", 
-                          size=15, hjust=0.5, vjust=0.5)) + 
-  guides(fill=guide_legend(title="Fitness Function")) + 
-  xlab("Number of Lines") + 
-  ylab("Proportion of SNPs") + 
+  theme(panel.grid = element_blank()) +
+  scale_fill_manual("Group",values=turbo(11)[c(1,4,6,9,11)],
+                    limits = c("Negative Epistasis\n(alpha = - 36.5)", "Directional QT",
+                               "Multiplicative\n(alpha = 0)",
+                               "Positive Epistasis\n(alpha = 36.5)",
+                               "Empirical")) +
   scale_color_manual("Group",values=turbo(11)[c(1,4,6,9,11)],
-                     limits = c("alpha = - 36.5", "Directional QT", 
+                     limits = c("alpha = - 36.5", "Directional QT",
                                 "Multiplicative\n(alpha = 0)",
                                 "Positive Epistasis\n(alpha = 36.5)",
                                 "Empirical")) +
-  scale_x_continuous(breaks = 8 * sort(unique(plotdat$Proportion))) + 
-  theme(panel.grid = element_blank()) 
+  # geom_point(aes(shape=as.factor(Generation), 
+  #                colour=Group,
+  #                y=Prop), 
+  #            stat="identity", 
+  #            position="identity", 
+  #            alpha=0, 
+  #            size=4) +
+  # geom_point(aes(shape=as.factor(Gen),
+  #                color=Group,
+  #                y=Prop), 
+  #            stat="identity", 
+  #            position=position_dodge2(reverse = FALSE,preserve ="single", width = 0.7), 
+  #            alpha=c(rep(1, times = 36)), 
+  #            size=4) +
+  guides(shape="none") + 
+  # geom_line(aes(y=Prop, x=(8 * Proportion), color=Group),
+  #                       stat="identity",
+  #                       position=position_dodge2(reverse = FALSE,preserve ="single", width = 0.7),
+  #                       alpha=0.6,
+  #                       size = 0.75,
+  #           linetype = "dashed") +
+  guides(fill=guide_legend(title="Fitness Function")) 
 
+
+
+
+# plot3 <- ggplot(plotdat2, aes(x=(8 * Proportion), color=Group)) +
+#   geom_point(aes(y=Prop),
+#              stat="identity",
+#              position="identity",
+#              alpha=0.6,
+#              size=4) +
+#   geom_line(aes(y=Prop),
+#             stat="identity",
+#             position="identity",
+#             alpha=0.6,
+#             size = 1.25) +
+#   theme_bw() +
+#   theme(text=element_text(family="sans",
+#                           face="plain",
+#                           color="#000000",
+#                           size=15, hjust=0.5, vjust=0.5)) +
+#   guides(fill=guide_legend(title="Fitness Function")) +
+#   xlab("Number of Lines") +
+#   ylab("Proportion of SNPs") +
+#   scale_color_manual("Group",values=turbo(11)[c(1,4,6,9,11)],
+#                      limits = c("alpha = - 36.5", "Directional QT",
+#                                 "Multiplicative\n(alpha = 0)",
+#                                 "Positive Epistasis\n(alpha = 36.5)",
+#                                 "Empirical")) +
+#   scale_x_continuous(breaks = 8 * sort(unique(plotdat$Proportion))) +
+#   theme(panel.grid = element_blank())
+# 
 
 
 
 ###################################
 
-plot1 + plot2 + plot3
+plot2 + plot1 + plot3
 ################################
 ## Supplement: alpha analysis ##
 ################################
@@ -423,7 +507,7 @@ ggplot(data, aes(y=meanjac, x=nloci)) +
   geom_point(aes(shape=as.factor(Generation), colour=fitfun), 
              stat="identity", 
              position="identity", 
-             alpha=0.6, 
+             alpha=1, 
              size=4) + 
   geom_line(aes(colour=fitfun, shape = as.factor(Generation)), 
             stat="identity", 
@@ -505,7 +589,7 @@ plot1 <- ggplot(data, aes(y=meanjac, x=nloci)) +
   geom_point(aes(shape=as.factor(Generation), colour=fitfun), 
              stat="identity", 
              position="identity", 
-             alpha=0.6, 
+             alpha=1, 
              size=4) + 
   geom_line(aes(colour=fitfun, shape = as.factor(Generation)), 
             stat="identity", 
@@ -592,7 +676,7 @@ plot2 <- ggplot(data, aes(y=meanjac, x=nloci)) +
   geom_point(aes(shape=as.factor(Generation), colour=fitfun), 
              stat="identity", 
              position="identity", 
-             alpha=0.6, 
+             alpha=1, 
              size=4) + 
   geom_line(aes(colour=fitfun, shape = as.factor(Generation)), 
             stat="identity", 
@@ -633,6 +717,241 @@ plot2 <- ggplot(data, aes(y=meanjac, x=nloci)) +
 #################################
 
 grid.arrange(plot1, plot2, ncol=2, widths = c(1,1.35))
+
+#####################
+## Supplement: RFS ##
+#####################
+setwd("~/Documents/GitHub/EpistasisSim/SFS")
+load(file = "sim.results.RData")
+
+plotdat <- data.frame("Group" = c(rep("B. Multiplicative", length(sim.results$`alpha=0`)),
+                                  rep("C. Positive Epistasis", length(sim.results$`alpha=36.5629892630851`)),
+                                  rep("A. Directional QT", length(sim.results$directional)),
+                                  rep("D. Empirical", length(sim.results$empirical))),
+                      "Proportion" = c(sim.results$`alpha=0`,
+                                       sim.results$`alpha=36.5629892630851`,
+                                       sim.results$directional,
+                                       sim.results$empirical))
+plotdat$Group <- factor(plotdat$Group, 
+                        levels = sort(unique(plotdat$Group)),
+                        labels = c("Directional QT", 
+                                   "Multiplicative\n(alpha = 0)",
+                                   "Positive Epistasis\n(alpha = 36.5)",
+                                   "Empirical"))
+plotdat <- plotdat %>% 
+  dplyr::count(Proportion, Group) %>% 
+  complete(Group, Proportion, fill = list(n=0)) %>%
+  group_by(Group) %>% 
+  mutate(Prop = n/sum(n))
+plotdat$Gen <- rep(10, times = 36)
+plotdat$Generation <- rep("Generation 10", times = 36)
+totaldata <- plotdat
+
+load(file = "sim.results.gen6.RData")
+
+plotdat <- data.frame("Group" = c(rep("B. Multiplicative", length(sim.results$`alpha=0`)),
+                                  rep("C. Positive Epistasis", length(sim.results$`alpha=36.5629892630851`)),
+                                  rep("A. Directional QT", length(sim.results$directional)),
+                                  rep("D. Empirical", length(sim.results$empirical))),
+                      "Proportion" = c(sim.results$`alpha=0`,
+                                       sim.results$`alpha=36.5629892630851`,
+                                       sim.results$directional,
+                                       sim.results$empirical))
+plotdat$Group <- factor(plotdat$Group, 
+                        levels = sort(unique(plotdat$Group)),
+                        labels = c("Directional QT", 
+                                   "Multiplicative\n(alpha = 0)",
+                                   "Positive Epistasis\n(alpha = 36.5)",
+                                   "Empirical"))
+plotdat <- plotdat %>% 
+  dplyr::count(Proportion, Group) %>% 
+  complete(Group, Proportion, fill = list(n=0)) %>%
+  group_by(Group) %>% 
+  mutate(Prop = n/sum(n))
+
+
+plotdat$Gen <- rep(6, times = 44)
+plotdat$Generation <- rep("Generation 6", times = 44)
+
+totaldata <- rbind(totaldata, plotdat)
+
+totaldata$Proportion[which(totaldata$Generation == "Generation 6")] <- 
+  totaldata$Proportion[which(totaldata$Generation == "Generation 6")] * 10 
+totaldata$Proportion[totaldata$Generation == "Generation 10"] <- 
+  totaldata$Proportion[totaldata$Generation == "Generation 10"] * 8
+
+totaldata$Generation <- factor(totaldata$Generation,
+                               levels = c("Generation 6",
+                                          "Generation 10"),
+                               labels = c("Generation 6",
+                                          "Generation 10"))
+#####################
+
+
+ggplot(totaldata, aes(x=(Proportion), color=Group)) +
+  geom_point(aes(y=Prop,
+                 shape=as.factor(Gen)),
+             stat="identity",
+             position="identity",
+             alpha=1,
+             size=4) +
+  geom_line(aes(y=Prop,
+                shape=as.factor(Gen)),
+            stat="identity",
+            position="identity",
+            alpha=0.6,
+            size = 1.25) +
+  theme_bw() +
+  theme(text=element_text(family="sans",
+                          face="plain",
+                          color="#000000",
+                          size=15, hjust=0.5, vjust=0.5)) +
+  guides(fill=guide_legend(title="Fitness Function")) +
+  guides(shape=guide_legend(title = "Generation")) + 
+  xlab("Number of Lines") +
+  ylab("Proportion of SNPs") +
+  scale_color_manual("Group",values=turbo(11)[c(4,6,9,11)],
+                     limits = c("Directional QT",
+                                "Multiplicative\n(alpha = 0)",
+                                "Positive Epistasis\n(alpha = 36.5)",
+                                "Empirical")) +
+  scale_x_continuous(breaks = seq(from = 0, to = 10, by  = 2)) +
+  theme(panel.grid = element_blank()) + 
+  facet_wrap(~ as.factor(Generation), 
+             scales = "free") +
+  ylim(c(0,.4))
+
+#########################
+## Supplement: Linkage ##
+#########################
+setwd("~/Documents/GitHub/EpistasisSim/EmpT0hb")
+empjaccs <- readRDS(file = 'hap_blocks.jaccard.neutral999.RDS')
+tmp <- c(mean(empjaccs[[1]]), mean(empjaccs[[2]]))
+empjaccs <- tmp
+rm(tmp)
+jaccmatrix <- as.matrix(fread(file = 'sim.results.csv'))
+jaccmatrix <- jaccmatrix[-1,-1]
+
+treatment <- c(rep(c("B. Positive Epistasis",
+                     "C. Negative Epistasis",
+                     "A. Multiplicative",
+                     "D. Directional QT",
+                     "E. Truncating QT",
+                     "F. Stabilizing QT"), each = 2000),
+               rep("G. Empirical", each = 2))
+
+generation <- c(rep(c(6,10), each = 1000, times = 6), 
+                c(6,10))
+
+jaccards <- c()
+for(i in 1:12){
+  jaccards <- c(jaccards, jaccmatrix[3:1002,i])
+}
+jaccards <- as.numeric(c(jaccards, empjaccs))
+title <- rep("Freely Recombining", times = length(jaccards))
+totaldata <- data.frame(treatment, generation, jaccards, title)
+
+setwd("~/Documents/GitHub/EpistasisSim/EmpT0hbLinkage/2xRed")
+
+jaccmatrix <- as.matrix(fread(file = 'sim.results.csv'))
+jaccmatrix <- jaccmatrix[-1,-1]
+
+
+treatment <- c(rep(c("B. Positive Epistasis",
+                     "C. Negative Epistasis",
+                     "A. Multiplicative",
+                     "D. Directional QT",
+                     "E. Truncating QT",
+                     "F. Stabilizing QT"), each = 2000))
+
+generation <- c(rep(c(6,10), each = 1000, times = 6))
+
+jaccards <- c()
+for(i in 1:12){
+  jaccards <- c(jaccards, jaccmatrix[3:1002,i])
+}
+jaccards <- as.numeric(jaccards)
+title <- rep("Linked 2x Reduced RR", times = length(jaccards))
+totaldata <- rbind(totaldata, data.frame(treatment, generation, jaccards, title))
+
+
+
+setwd("~/Documents/GitHub/EpistasisSim/EmpT0hbLinkage")
+empjaccs <- readRDS(file = 'hap_blocks.jaccard.neutral999.RDS')
+tmp <- c(mean(empjaccs[[1]]), mean(empjaccs[[2]]))
+empjaccs <- tmp
+rm(tmp)
+jaccmatrix <- as.matrix(fread(file = 'sim.results.csv'))
+jaccmatrix <- jaccmatrix[-1,-1]
+
+treatment <- c(rep(c("B. Positive Epistasis",
+                     "C. Negative Epistasis",
+                     "A. Multiplicative",
+                     "D. Directional QT",
+                     "E. Truncating QT",
+                     "F. Stabilizing QT"), each = 2000),
+               rep("G. Empirical", each = 2))
+
+generation <- c(rep(c(6,10), each = 1000, times = 6), 
+                c(6,10))
+
+jaccards <- c()
+for(i in 1:12){
+  jaccards <- c(jaccards, jaccmatrix[3:1002,i])
+}
+jaccards <- as.numeric(c(jaccards, empjaccs))
+title <- rep("Linked", times = length(jaccards))
+totaldata <- rbind(totaldata, data.frame(treatment, generation, jaccards, title))
+
+
+
+
+
+
+totaldata <- totaldata[-which(totaldata$treatment == "G. Empirical"),]
+totaldata$treatment <- factor(totaldata$treatment, 
+                              levels = sort(unique(totaldata$treatment)), 
+                              labels = c("Multiplicative",
+                                         "Positive Epistasis", 
+                                         "Negative Epistasis", 
+                                         "Directional QT",    
+                                         "Truncating QT",
+                                         "Stabilizing QT" ))
+
+#########################
+
+ggplot(totaldata, aes(y=jaccards, x=as.factor(treatment))) + 
+  geom_hline(yintercept=empjaccs[1], 
+             linetype="dotdash", 
+             color = turbo(11)[11], 
+             size = .75) +
+  geom_hline(yintercept=empjaccs[2], 
+             linetype="dashed", 
+             color = turbo(11)[11], 
+             size  = .75) +
+  geom_boxplot(aes(fill=as.factor(generation)), 
+               stat="boxplot", position="dodge", 
+               alpha=1, width=0.3) + 
+  facet_wrap(~ title) + 
+  theme_bw() +  
+  theme(text=element_text(family="sans", face="plain", 
+                          color="#000000", size=15, hjust=0.5, vjust=0.5)) + 
+  guides(fill=guide_legend(title="Generation")) + 
+  xlab("Fitness Function") + 
+  ylab("Mean Jaccard Score") + 
+  scale_y_continuous(sec.axis = sec_axis(~ ., breaks = empjaccs, 
+                                         labels = c("Empirical\nGen 6",
+                                                    "Empirical\nGen 10")),
+                     limits = c(0,1)) +
+  theme(axis.text.x = element_text(angle = 45, 
+                                   vjust = 1, 
+                                   hjust=1)) +
+  scale_color_manual(values = viridis(12)[c(3,12)]) + 
+  scale_fill_manual(values = viridis(12)[c(3,12)]) +
+  theme(axis.text.y.right = element_text(size = 12, 
+                                         face = "bold", 
+                                         color = turbo(11)[11])) +
+  theme(panel.grid.minor = element_blank())
 
 ####################################
 ## Supplement: Mut Drift analysis ##
@@ -1206,10 +1525,10 @@ StabilizingEpistasis = exp(-0.5 * ((x - mu)^2 / std ^ 2));
 
 linesdatadd <- data.frame(title = rep("4977 SNPs on 121 Haplotype Blocks. Quantative Fitness Functions", times = (3 * 200)),
                           relfit = c(DirectionalEpistasis, TruncatingEpistasis, StabilizingEpistasis),
-                                                     pheno = rep(x, times = 3),
-                                                     fitfun = rep(c("Directional QT",
-                                                                    "Truncating QT",
-                                                                    "Stabilizing QT"), each = 200))
+                          pheno = rep(x, times = 3),
+                          fitfun = rep(c("Directional QT",
+                                         "Truncating QT",
+                                         "Stabilizing QT"), each = 200))
 
 linesdat <- rbind(linesdat, linesdatadd)
 
@@ -1276,18 +1595,18 @@ rm(list = ls()[-c(7,11,18)])
 ###################################
 
 linesdat$fitfun <- factor(linesdat$fitfun, 
-                              levels = c("Multiplicative",
-                                         "Positive Epistasis", 
-                                         "Negative", 
-                                         "Directional QT",    
-                                         "Truncating QT",
-                                         "Stabilizing QT"), 
-                              labels = c("Multiplicative",
-                                         "Positive Epistasis", 
-                                         "Negative Epistasis", 
-                                         "Directional QT",    
-                                         "Truncating QT",
-                                         "Stabilizing QT"))
+                          levels = c("Multiplicative",
+                                     "Positive Epistasis", 
+                                     "Negative", 
+                                     "Directional QT",    
+                                     "Truncating QT",
+                                     "Stabilizing QT"), 
+                          labels = c("Multiplicative",
+                                     "Positive Epistasis", 
+                                     "Negative Epistasis", 
+                                     "Directional QT",    
+                                     "Truncating QT",
+                                     "Stabilizing QT"))
 rangesdat$fitfun <- factor(rangesdat$fitfun, 
                            levels = c("Multiplicative",
                                       "Positive Epistasis", 
@@ -1338,7 +1657,7 @@ ggplot(linesdat, aes(y=log10(relfit), x=pheno)) +
   guides(color=guide_legend(title="Fitness Function")) +
   coord_cartesian(ylim = c(-10,0), clip = 'on') +
   geom_vline(data = vlinesdat, aes(color = fitfun,
-                            xintercept=xint),
+                                   xintercept=xint),
              linetype="dashed") + 
   scale_color_manual("Group",values=c(turbo(11)[c(6,8,2,4,5,10)], rgb(0,0,0,0.15)),
                      limits = c(as.character(sort(unique(linesdat$fitfun))), 
@@ -1348,7 +1667,7 @@ ggplot(linesdat, aes(y=log10(relfit), x=pheno)) +
                                      xend = xmax,
                                      y = y,
                                      yend = y),
-                                     size = 3,
+               size = 3,
                lineend = "round")
 ## unique adaptive genomic architecture
 

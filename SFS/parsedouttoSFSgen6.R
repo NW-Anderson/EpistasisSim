@@ -2,12 +2,12 @@ GetNumberofLines <- function(rawout, cutoffs){
   nloci <- 121
   signsnps <- vector("list",10)
   names(signsnps) <- paste('pop', 1:10)
-  for(pop in 1:8){
+  for(pop in 1:10){
     popdat <- rawout[which(rawout[,2] == pop),]
     signsnps[[pop]] <- which((popdat[2,3:ncol(popdat)] - popdat[1,3:ncol(popdat)]) >= cutoffs[1:nloci])
   }
   tmparray <- array()
-  for(i in 1:8){
+  for(i in 1:10){
     tmpvec <- c()
     for(j in 1:121){
       tmpvec <- c(tmpvec, j %in% signsnps[[i]])
@@ -65,7 +65,7 @@ for(a in alphas){
                    rawout <- rawout[,-ncol(rawout)]
                    cutoffs <- GetCutoffs(rawout = rawout)
                    return(GetNumberofLines(rawout = rawout,
-                                    cutoffs = cutoffs) / 8)
+                                    cutoffs = cutoffs) / 10)
                  }
   sim.results[[a]] <- tmp
 }
@@ -83,11 +83,24 @@ tmp <- foreach(sim = files,
                  rawout <- rawout[,-ncol(rawout)]
                  cutoffs <- GetCutoffs(rawout = rawout)
                  return(GetNumberofLines(rawout = rawout,
-                                         cutoffs = cutoffs) / 8)
+                                         cutoffs = cutoffs) / 10)
                }
 sim.results[[ff]] <- tmp
 setwd("~/Documents/GitHub/EpistasisSim/SFS")
 # write.csv(sim.results, file = "sim.results.csv")
-sim.results[["empirical"]] <- hap_blocks.RFS[[2]]
+sim.results[["empirical"]] <- hap_blocks.RFS[[1]]
 save(sim.results, file = "sim.results.gen6.RData")
 
+
+#' more than 80 hours a week
+#' taking 2 classes
+#' working 40 hours to research
+#' have a deadline with nature comm
+#' 20+ hours a week this week and last
+#' more time than full TA ship from last week
+#' 90 + hours a week
+#' carol is paying part of my salary
+#' go to jeff hardin if janet does not listen
+#' 
+#' jacob should complain to nazan
+#' 
