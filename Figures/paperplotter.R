@@ -123,7 +123,7 @@ totaldata$fitfun <- factor(totaldata$fitfun,
 
 ################################
 
-
+### \u03b1
 plot1 <- ggplot(totaldata, aes(y=meanjac, x=nloci)) + 
   geom_hline(yintercept=empjaccs[1], 
              linetype="dotdash", 
@@ -136,13 +136,13 @@ plot1 <- ggplot(totaldata, aes(y=meanjac, x=nloci)) +
              stat="identity", 
              position="identity", 
              alpha=1, 
-             size=4) + 
-  geom_line(aes(colour=fitfun, 
-                shape = as.factor(Generation)), 
-            stat="identity", 
-            position="identity", 
+             size=2.5) + 
+  geom_line(aes(colour=fitfun,
+                shape = as.factor(Generation)),
+            stat="identity",
+            position="identity",
             alpha=0.6,
-            size = 1.25) + 
+            size = 1) +
   theme_bw() + 
   theme(text=element_text(family="sans", 
                           face="plain", 
@@ -152,11 +152,13 @@ plot1 <- ggplot(totaldata, aes(y=meanjac, x=nloci)) +
                           vjust=0.5)) + 
   scale_size(range=c(1, 3)) + 
   guides(shape=guide_legend(title = "Generation",
-                                                        override.aes = list(alpha=1))) + 
-  theme(legend.position = "bottom") +
+                            override.aes = list(alpha=1))) + 
+  theme(legend.position = "top") +
   guides(colour = "none") + 
   xlab("Number of Loci") + 
   ylab("Mean Jaccard Score") +
+  labs(tag = "b",
+       title = "Genetic Parallelism\n ~ Number of Loci") +
   scale_color_manual(values = turbo(11)[c(1,6,9,4,11)]) +
   scale_x_continuous(breaks = c(seq(from = 20, 
                                     to = 100,
@@ -182,7 +184,8 @@ plot1 <- ggplot(totaldata, aes(y=meanjac, x=nloci)) +
                                          color = turbo(11)[11])) +
   theme(axis.text.y.left = element_blank()) +
   theme(axis.title.y.left = element_blank()) +
-  theme(panel.grid = element_blank())
+  theme(panel.grid = element_blank()) + 
+  theme(plot.tag = element_text(face = "bold"))
 
 
 
@@ -252,14 +255,14 @@ totaldata <- totaldata[which(totaldata$treatment == "D. alpha = 36.5" |
                                totaldata$treatment == "D. Directional QT"),]
 
 totaldata$treatment <-  factor(totaldata$treatment, 
-                          levels = sort(unique(totaldata$treatment)), 
-                          labels = c("alpha = 0\n(Multiplicative)", 
-                                     "alpha = 36.5", "Directional QT"))
+                               levels = sort(unique(totaldata$treatment)), 
+                               labels = c("Multiplicative\n(\u03b1 = 0)", 
+                                          "Positive Epistasis\n(\u03b1 = 36.5)", "Directional QT"))
 
 ##################################
 
-plot2 <- ggplot(totaldata, aes(y=jaccards, 
-                          x=as.factor(treatment))) + 
+plot2 <-  ggplot(totaldata, aes(y=jaccards, 
+                               x=as.factor(treatment))) + 
   geom_hline(yintercept=empjaccs[1], 
              linetype="dotdash", 
              color = turbo(11)[11], 
@@ -273,6 +276,8 @@ plot2 <- ggplot(totaldata, aes(y=jaccards,
                position="dodge", 
                alpha=1, width=0.3) + 
   theme_bw() + 
+  labs(tag = "a",
+       title = "Genetic Parallelism\n ~ Fitness Function") +
   theme(text=element_text(family="sans", 
                           face="plain", 
                           color="#000000", 
@@ -293,9 +298,11 @@ plot2 <- ggplot(totaldata, aes(y=jaccards,
   scale_fill_manual(values = viridis(12)[c(3,12)]) +
   theme(axis.text.y.right = element_text(size = 12, 
                                          face = "bold", 
-                                         color = turbo(11)[11])) +
+                                         color = turbo(11)[11],
+                                         hjust = 0.5)) +
   theme(panel.grid = element_blank()) + 
-  theme(legend.position = "bottom")
+  theme(legend.position = "top") +
+  theme(plot.tag = element_text(face = "bold"))
 
 
 
@@ -320,8 +327,8 @@ plotdat <- data.frame("Group" = c(rep("B. Multiplicative", length(sim.results$`a
 plotdat$Group <- factor(plotdat$Group, 
                         levels = sort(unique(plotdat$Group)),
                         labels = c("Directional QT", 
-                                   "Multiplicative\n(alpha = 0)",
-                                   "Positive Epistasis\n(alpha = 36.5)",
+                                   "Multiplicative (\u03b1 = 0)",
+                                   "Positive Epistasis (\u03b1 = 36.5)",
                                    "Empirical"))
 
 ###################################
@@ -362,12 +369,11 @@ plotdat2$Gen <- rep(10, times = 36)
 #                              Generation = 6,
 #                              Gen = 6))
 
-
-plot3 <- ggplot(plotdat2, aes(x=(8 * Proportion), fill=Group)) +
+plot3 <-  ggplot(plotdat2, aes(x=(8 * Proportion), fill=Group)) +
   geom_bar(aes(y=Prop),
            stat = "identity",
            position=position_dodge2(reverse = FALSE,preserve ="single"),
-           width = .7) +
+           width = .85) +
   # geom_histogram(aes(y=..density..),
   #                stat="bin",
   #                position=position_dodge2(reverse = FALSE,preserve ="single"),
@@ -376,6 +382,8 @@ plot3 <- ggplot(plotdat2, aes(x=(8 * Proportion), fill=Group)) +
   #                                unique(plotdat$Proportion) - 0.045)),
   #                center = 1) +
   theme_bw() +
+  labs(tag = "c",
+       title = "Replicate\n Frequency Spectra") +
   theme(text=element_text(family="sans",
                           face="plain",
                           color="#000000",
@@ -384,16 +392,18 @@ plot3 <- ggplot(plotdat2, aes(x=(8 * Proportion), fill=Group)) +
   xlab("Number of Lines") +
   ylab("Proportion of Hap Blocks") +
   # scale_x_continuous(breaks = sort(unique(plotdat$Proportion))) +
-  theme(panel.grid = element_blank()) +
+  theme(panel.grid = element_blank(),
+        legend.key.height = unit(3,"lines"),
+        legend.text = element_text(vjust = 0.5)) +
   scale_fill_manual("Group",values=turbo(11)[c(1,4,6,9,11)],
-                    limits = c("Negative Epistasis\n(alpha = - 36.5)", "Directional QT",
-                               "Multiplicative\n(alpha = 0)",
-                               "Positive Epistasis\n(alpha = 36.5)",
+                    limits = c("Negative Epistasis (\u03b1 = - 36.5)", "Directional QT",
+                               "Multiplicative (\u03b1 = 0)",
+                               "Positive Epistasis (\u03b1 = 36.5)",
                                "Empirical")) +
   scale_color_manual("Group",values=turbo(11)[c(1,4,6,9,11)],
-                     limits = c("alpha = - 36.5", "Directional QT",
-                                "Multiplicative\n(alpha = 0)",
-                                "Positive Epistasis\n(alpha = 36.5)",
+                     limits = c("Negative Epistasis (\u03b1 = - 36.5)", "Directional QT",
+                                "Multiplicative (\u03b1 = 0)",
+                                "Positive Epistasis (\u03b1 = 36.5)",
                                 "Empirical")) +
   # geom_point(aes(shape=as.factor(Generation), 
   #                colour=Group,
@@ -406,17 +416,18 @@ plot3 <- ggplot(plotdat2, aes(x=(8 * Proportion), fill=Group)) +
   #                color=Group,
   #                y=Prop), 
   #            stat="identity", 
-  #            position=position_dodge2(reverse = FALSE,preserve ="single", width = 0.7), 
-  #            alpha=c(rep(1, times = 36)), 
-  #            size=4) +
-  guides(shape="none") + 
+#            position=position_dodge2(reverse = FALSE,preserve ="single", width = 0.7), 
+#            alpha=c(rep(1, times = 36)), 
+#            size=4) +
+guides(shape="none") + 
   # geom_line(aes(y=Prop, x=(8 * Proportion), color=Group),
   #                       stat="identity",
   #                       position=position_dodge2(reverse = FALSE,preserve ="single", width = 0.7),
   #                       alpha=0.6,
   #                       size = 0.75,
   #           linetype = "dashed") +
-  guides(fill=guide_legend(title="Fitness Function")) 
+  guides(fill=guide_legend(title="Fitness Function")) +
+  theme(plot.tag = element_text(face = "bold"))
 
 
 
