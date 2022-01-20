@@ -1,0 +1,53 @@
+EpistasisSim:
+
+FileDirectory:
+
+## ABC: 
+	Contains the R script and data necessary to run the ABC analysis
+
+## Cluster:
+	Contains scripts to be run on the CHTC at UW-Madison. This includes all of the analyses save for the ABC analysis, which can be run locally.
+	**This folder contains all of the SLiM scripts, parameter values, and seeds used in the final manuscript. SLiM scripts in the following folders are written to be used in the GUI, and were may have changed for the final analysis.**
+
+## Deprecated:
+	Deprecated files that I am scared to delete. 
+
+## EmpT0hb:
+	Contains helper functions and results for the analysis of 121 unlinked haplotype blocks, from their empirical starting frequencies.
+
+
+## EmpT0hbLinkage:
+	Contains helper functions and results for the analysis of 121 haplotype blocks, from their empirical starting frequencies, where the haplotype blocks are linked together on larger chromosomes.
+
+## EmpT0snps:
+	Contains helper functions and results for the analysis of 4977 snps, from their empirical starting frequencies, linked together on 121 unlinked haplotype blocks.
+
+## Figures:
+	Contains an R script to create some figures in the manuscript
+
+## hb0.5:
+	Contains helper functions and results for the analysis of 121 unlinked haplotype blocks, from their a starting frequency of 0.5.
+
+## MutDrifthb:
+	Contains helper functions and results for the analysis of 121 unlinked haplotype blocks, from starting frequencies sampled from 100,000 non-selected snps.
+
+## MutDriftsnps:
+	Contains helper functions and results for the analysis of 4977 snps from starting frequencies sampled from 100,000 non-selected snps, where the 4977 snps are linked together on 121 larger haplotype blocks.
+
+## nlociAlphahb:
+	Contains helper functions and results for the analysis of a variable number of unlinked haplotype blocks and strengths of epistasis (the alpha parameter), from empirical starting freqs.
+
+## nlocihb:
+	Contains helper functions and results for the analysis of a variable number of unlinked haploypte blocks and fitness functions, from empirical starting freqs.
+
+## nlocisnps:
+	Contains helper functions and results for the analysis of a variable number of snps located on larger unlinked haplotype blocks and variable fitness functions, from empirical starting freqs.
+
+## SFS:
+	This actually contains helper functions for calculating the **RFS** from the simulated data. 
+
+## snps0.5:
+	Contains helper functions and results for the analysis of 4977 snps arranged on 121 larger haplotype blocks where all snps start with frequency of 0.5.
+
+
+
