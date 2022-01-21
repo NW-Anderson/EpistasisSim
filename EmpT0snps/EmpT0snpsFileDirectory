@@ -1,0 +1,38 @@
+Emp T0 snps:
+
+File Directory:
+
+This folder contains helper functions and data for the analysis of 4977 snps located on 121 unlinked haplotype blocks from empirical starting frequencies where we vary the type of fitness function used.
+
+## clusteroutputparser.R
+	Takes a large unsorted list of raw SLiM outputs from the cluster and organizes the files based on parameter values used in the SLiM simulations.
+
+## hap_block_snps.jaccard.neutral999.RDS
+	Empirical jaccard scores
+
+## hap_blocks_snps.neutral_AFC_cutoffs.RDS
+	AFC cuttoffs of the snps which are used in the model
+
+## hap_blocks.snp_res.RDS
+	Parameters which are used in the model
+
+## makerecommap.R
+	Takes in the RDS data and outputs it in a form that is usable in SLiM. This version also takes position of each snp and calculates the recombination fraction between adjacent snps from a given per base pair recombination rate
+
+## New.slim
+	SLiM simulation **designed to be run locally for testing**
+
+## parammaker.R
+	Creates a matrix of parameter values and random seeds to be looped through when running the simulations on the cluster
+
+
+## parsedouttojaccard.R
+	Script to go through the organized SLiM outputs from clusteroutputparser.R and calculate the pairwise jaccard score between replicate populations for each simulation.
+
+## RecomMap.csv
+	A vector of recombination fractions between adjacent snps using the T californicus recombination rate
+
+## sortedsnpdata.csv
+	Haplotype block parameters in a format usable in SLiM 
+
+

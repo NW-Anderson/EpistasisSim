@@ -1,0 +1,52 @@
+Emp T0 hb Linkage:
+
+File Directory:
+
+This folder contains helper functions and data for the analysis of 121 linked haplotype blocks from empirical starting frequencies where we vary the type of fitness function used.
+
+## 2xRed 
+	Output of parsedouttojaccard.R with T californicus' recombination rate divided by 2
+
+## clusteroutputparser.R
+	Takes a large unsorted list of raw SLiM outputs from the cluster and organizes the files based on parameter values used in the SLiM simulations.
+
+## hap_blocks.jaccard.neutral999.RDS
+	Empirical jaccard scores
+
+## hap_blocks.neutral_AFC_cutoffs.RDS
+	AFC cuttoffs of the haplotype blocks which are used in the model
+
+## hap_blocks.res.RDS
+	Parameters which are used in the model
+
+## makerecommap.R
+	Takes in the RDS data and outputs it in a form that is usable in SLiM. This version also takes in the midpoint of each haplotype block and calculates the recombination fraction between adjacent haplotype blocks from a given per base pair recombination rate
+
+## New.slim
+	SLiM simulation **designed to be run locally for testing**
+
+## parammaker.R
+	Creates a matrix of parameter values and random seeds to be looped through when running the simulations on the cluster
+
+## params.txt
+	Output of parammaker.R. 
+
+## parsedouttojaccard.R
+	Script to go through the organized SLiM outputs from clusteroutputparser.R and calculate the pairwise jaccard score between replicate populations for each simulation.
+
+## RecomMap.csv
+	A vector of recombination fractions between adjacent haplotype blocks using the T californicus recombination rate
+
+## RecomMap2xred.csv
+	A vector of recombination fractions between adjacent haplotype blocks using the T californicus recombination rate divided by 2
+
+## RecomMap4xred.csv
+	A vector of recombination fractions between adjacent haplotype blocks using the T californicus recombination rate divided by 4
+
+## sim.results.csv
+	Output of parsedouttojaccard.R with T californicus' recombination rate
+
+## sortedhbdata.csv
+	Haplotype block parameters in a format usable in SLiM 
+
+

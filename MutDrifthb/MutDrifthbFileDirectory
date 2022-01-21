@@ -1,8 +1,8 @@
-alphaComparison:
+MutDrift hb:
 
-FileDirectory:
+File Directory:
 
-This folder contains helper functions and data for the analysis where we vary the alpha parameter in the directional epistasis model.
+This folder contains helper functions and data for the analysis of 121 unlinked haplotype blocks from starting frequencies sampled from nonselected snps, where we vary the type of fitness function used.
 
 ## clusteroutputparser.R
 	Takes a large unsorted list of raw SLiM outputs from the cluster and organizes the files based on parameter values used in the SLiM simulations.
@@ -10,14 +10,8 @@ This folder contains helper functions and data for the analysis where we vary th
 ## hap_blocks.jaccard.neutral999.RDS
 	Empirical jaccard scores
 
-## hap_blocks.neutral_AFC_cutoffs.RDS
-	AFC cuttoffs of the haplotype blocks which are used in the model
-
-## hap_blocks.res.RDS
-	Parameters which are used in the model
-
-## makerecommap.R
-	Takes in the RDS data and outputs it in a form that is usable in SLiM
+## mutdriftinfo.csv
+	Contains starting freqs of 100,000 nonselected snps to sample from when initializing each simulation
 
 ## New.slim
 	SLiM simulation **designed to be run locally for testing**
@@ -36,4 +30,5 @@ This folder contains helper functions and data for the analysis where we vary th
 
 ## sortedhbdata.csv
 	Haplotype block parameters in a format usable in SLiM 
-	
+
+

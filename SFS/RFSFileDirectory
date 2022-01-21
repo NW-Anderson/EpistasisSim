@@ -1,0 +1,20 @@
+RFS:
+
+File Directory:
+
+This folder contains the helper function to go from the parsed SLiM output files to the RFS
+
+## hap_blocks.RFS.rds
+	Empirical RFS
+
+## parsedouttoSFS.R
+	R script to calculate the **RFS** at generation 10
+
+## parsedoutttoSFSgen6.R
+	R script to calculate the **RFS** at generation 6
+
+## sim.results.gen6.RData
+	output of parsedouttoSFSgen6.R
+
+## sim.results.RData
+	output of parsedouttoSFS.R

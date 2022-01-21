@@ -1269,7 +1269,7 @@ ggplot(pointrangedata, aes(x=as.factor(treatment))) +
 ###################################
 ## Supplement: Fitness Functions ##
 ###################################
-
+rm(list = ls())
 nmuts <- 1:121
 x <- nmuts / 121
 

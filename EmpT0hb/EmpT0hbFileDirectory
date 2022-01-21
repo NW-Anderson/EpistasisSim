@@ -1,8 +1,8 @@
-alphaComparison:
+Emp T0 hb:
 
-FileDirectory:
+File Directory:
 
-This folder contains helper functions and data for the analysis where we vary the alpha parameter in the directional epistasis model.
+This folder contains helper functions and data for the analysis of 121 unlinked haplotype blocks from empirical starting frequencies where we vary the type of fitness function used.
 
 ## clusteroutputparser.R
 	Takes a large unsorted list of raw SLiM outputs from the cluster and organizes the files based on parameter values used in the SLiM simulations.
@@ -25,9 +25,6 @@ This folder contains helper functions and data for the analysis where we vary th
 ## parammaker.R
 	Creates a matrix of parameter values and random seeds to be looped through when running the simulations on the cluster
 
-## params.txt
-	Output of parammaker.R. 
-
 ## parsedouttojaccard.R
 	Script to go through the organized SLiM outputs from clusteroutputparser.R and calculate the pairwise jaccard score between replicate populations for each simulation.
 
@@ -36,4 +33,7 @@ This folder contains helper functions and data for the analysis where we vary th
 
 ## sortedhbdata.csv
 	Haplotype block parameters in a format usable in SLiM 
-	
+
+## testparams.txt
+	parameter matrix created for testing on the cluster
+
