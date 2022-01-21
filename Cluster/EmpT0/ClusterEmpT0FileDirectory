@@ -1,0 +1,17 @@
+EmpTo:
+
+FileDirectory:
+
+Within the simulations where loci begin at their starting frequencies, there are several types of analysis.
+
+## alpha
+	The simulations performed within this folder vary the alpha parameter of the directional epistasis model
+
+## hb
+	The simulations performed within this folder vary the fitness function used and is performed on 121 unlinked haplotype blocks
+
+## hbLinkage
+	The simulations performed withing this folder vary the fitness function used and are performed on 121 haplotype blocks which are linked together on 4 larger chromosomes.
+
+## snps
+	The simulations performed within this folder vary the fitness function used and are performed on 4977 snps linked together on 121 larger unlinked haplptype blocks

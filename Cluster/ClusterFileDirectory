@@ -1,0 +1,25 @@
+Cluster:
+
+FileDirectory:
+
+This folder contains all of the scripts, parameters, seeds, and data **that was actually put on the cluster and run to make the paper**. With the exception of the ABC analysis, which is run locally. 
+
+Running these functions should recreate the data used in the manuscript exactly! Parsing and analysis of the outputs can be done using the R scripts provided in the other folders in /EpistasisSim.
+
+I've divided each of the analyses into 4 large "types"
+
+I will only provide a detailed file directory for the /MutDriftBalance/snps/ file, but all of the scripts should be very similar
+
+## EmpT0
+	Scripts contained in this file all have the loci begin from their empirical starting frequencies and the number of loci is held constant in all of the simulations.
+
+## MutDriftBalance
+	Scripts contained in this file have the loci begin from a sample of empirical **non**selected allele frequencies.
+
+## nloci
+	Scripts contained in this file all have the number of loci underrlying a trait vary.
+
+## T0.5
+	Scripts in this file all have the loci begin with a starting frequency of 0.5
+
+

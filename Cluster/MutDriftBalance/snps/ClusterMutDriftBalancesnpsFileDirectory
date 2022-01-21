@@ -1,0 +1,35 @@
+Mut Drift Balance snps:
+
+File Directory:
+
+## 4977.sh
+	shell script executed by the cluster. Unpacks slim build and calls New.slim with the parameters provided in the submit file.
+
+## 4977.sub
+	Submit file provided to the cluster. 
+
+## mutdriftinfo.csv
+	Contains starting freqs of 100,000 nonselected snps to sample from when initializing each simulation
+
+## New.slim
+	The slim simulation that is executed within the shell script
+
+## params.txt
+	list of parameters looped through in the submit file 
+
+## RecomMap.csv
+	list of recombination fractions between adjacent snps which is read into slim at the beginning of each simulation
+
+## slimbuild.tar.gz
+	SLiM build which is unpacked at the beginning of the shell script
+
+## sortedsnpdata.csv
+	parameters used within the slim simulations
+
+## test.sh
+	testing shell script
+
+## test.sub
+	testing submit file
+
+

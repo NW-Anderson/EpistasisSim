@@ -1,0 +1,11 @@
+Cluster T0.5:
+
+File Directory:
+
+Scripts contained within this directory have all loci starting from a frequency of 0.5
+
+## hb
+	The simulations performed within this folder vary the fitness function used and is performed on 121 unlinked haplotype blocks
+
+## snps
+	The simulations performed within this folder vary the fitness function used and are performed on 4977 snps linked together on 121 larger unlinked haplptype blocks

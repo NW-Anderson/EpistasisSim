@@ -1,0 +1,14 @@
+Cluster nloci:
+
+FileDirectory:
+
+Simulations within this directory vary the number of loci contributing to fitness
+
+## alpha
+	The simulations performed within this folder vary the alpha parameter of the directional epistasis model
+
+## hb
+	The simulations performed within this folder vary the fitness function used and is performed on variable number of unlinked haplotype blocks
+
+## snps
+	The simulations performed within this folder vary the fitness function used and are performed on a variable number of snps linked together on up to 121 larger unlinked haplptype blocks

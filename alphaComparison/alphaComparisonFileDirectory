@@ -1,0 +1,37 @@
+alphaComparison:
+
+FileDirectory:
+
+## clusteroutputparser.R
+	Takes a large unsorted list of raw SLiM outputs from the cluster and organizes the files based on parameter values used in the SLiM simulations.
+
+## hap_blocks.jaccard.neutral999.RDS
+	Empirical jaccard scores
+
+## hap_blocks.neutral_AFC_cutoffs.RDS
+	AFC cuttoffs of the haplotype blocks which are used in the model
+
+## hap_blocks.res.RDS
+	Parameters which are used in the model
+
+## makerecommap.R
+	Takes in the RDS data and outputs it in a form that is usable in SLiM
+
+## New.slim
+	SLiM simulation **designed to be run locally for testing**
+
+## parammaker.R
+	Creates a matrix of parameter values and random seeds to be looped through when running the simulations on the cluster
+
+## params.txt
+	Output of parammaker.R. 
+
+## parsedouttojaccard.R
+	Script to go through the organized SLiM outputs from clusteroutputparser.R and calculate the pairwise jaccard score between replicate populations for each simulation.
+
+## sim.results.csv
+	Output of parsedouttojaccard.R
+
+## sortedhbdata.csv
+	Haplotype block parameters in a format usable in SLiM 
+	

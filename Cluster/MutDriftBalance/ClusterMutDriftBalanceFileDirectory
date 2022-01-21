@@ -1,0 +1,9 @@
+MutDriftBalance:
+
+File Directory:
+
+## hb
+	The simulation within this folder will vary the fitness function used on 121 unlinked haplotype blocks where the starting frequency of the haplotype blocks is randomly sampled from the starting frequency of **non**selected snps
+
+## snps
+	The simulation within this folder will vary the fitness function used on 4977 linked snps located on 121 unlinked haplotype blocks where the starting frequency of the snps is randomly sampled from the starting frequency of **non**selected snps

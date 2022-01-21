@@ -1,0 +1,22 @@
+ABC:
+
+File Directory:
+
+## ABCoutput.RData:
+	Saved output from the EasyABC function in R. This is the results of the ABC analysis that gave us alpha = 36.5.
+
+## hap_blocks.jaccard.neutral999.RDS
+	Parameters on the haplotype blocks which are used in the model
+
+## New.slim
+	SLiM simulation called in wrapper.R
+
+## output
+	Folder where raw output from SLiM is temporarily stored while the ABC is running
+
+## sortedhbdata.csv
+	Haplotype block parameters in a format usable in SLiM
+
+## wrapper.R
+	R script to run the ABC analysis.
+
