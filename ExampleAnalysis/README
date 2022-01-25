@@ -1,0 +1,72 @@
+The purpose of this folder is to walk the reader through the workflow of one of the analyses done.
+We focus on the analysis of a variable number of snps located on up to 121 larger unlinked haplotype blocks. The functions contained here are copied and pasted from elsewhere in the github but these are well commented, and this walkthrough exists to tell the reader the order of the steps that they need to take. Every analysis takes steps similar to this one, but are all a bit different (e.g. analyses where the number of loci is not varied will not have a selectedloci.csv data frame). This is one of the more complicated analyses, so the others should be a simplification of what is commented on here.
+
+############
+## Step 1 ##
+############
+Done locally:
+
+Files needed:
+haplotype_blocks.snp_res.RDS: empirical data concerning the candidate snps
+hap_block_snps.neutral_AFC_cutoffs.RDS: AFC cutoffs for the candidate snps
+parammaker.R: Creates two dataframes, one which contains a list of parameter values for each simulation run in each of its rows and one that contains which snps are included in each of the simulations where there are a reduced number of loci contributing to fitness
+makerecommap.R: Takes in the two RDS objects and creates a csv of the data needed in slim. Also takes the position of the snps included in each simulation and creates a recombination map to be used in slim.
+
+Steps to take:
+First open parammaker.R and run up until the deprecated section (line 68). This should create two files. One, params.txt, is a matrix of parameter values used in each simulation ocuppying the rows. sampledloci.csv is a list of all of the loci included in each simulation occupying rows.  
+
+After those two files are created, we are going to open makerecommap.R. This will take in two RDS dataframes and turn them into a csv that is useful in SLiM. Also, this function will take in the sampledloci.csv that we just created and calculate the recombination fraction between all snps included in each simulation (i.e. the recombination map) based on the snps physical position and the T californicus recombaination rate. Running makerecommap.R should create two more data files, sortedsnpdata.csv and RecomMap.csv
+
+Files Created:
+params.txt: its rows contain a list of parameter values used in each slim simulation
+sampledloci.csv: its rows contain a list of the loci included in each simulation
+sortedsnpdata.csv: empirical parameters of the model (e.g. starting frequencies, selection coefficients etc)
+RecomMap.csv: its rows contain recombination fractions between adjacent snps included in the model.
+
+############
+## Step 2 ##
+############
+Done on the Cluster:
+
+For this part lets jump to the ExampleAnalysis/Cluster folder.
+This is written to be used on the UW-madison chtc. It uses condor iirc.
+
+Files needed:
+params.txt: Made during step one. Needs to be copied into the folder you put on the cluster
+sampledloci.csv: Made during step one. Needs to be copied into the folder you put on the cluster
+sortedsnpdata.csv: Made during step one. Needs to be copied into the folder you put on the cluster
+RecomMap.csv: Made during step one. Needs to be copied into the folder you put on the cluster
+slimbuild.tar.gz: Our build of the slim program, unpacked within the cluster
+New.slim: the slim simulation
+121.sub: the submit file for the cluster
+121.sh: shell script executed in the cluster
+
+Also needed are 3 empty directories titled "logs"," "outs" and "errs" that will be populated by logfiles and error messages if they exist.
+
+Steps to take:
+First copy and paste the needed files we created during step 1.
+Then all you really need to do is scp the whole folder into the cluster then run condor_submit 121.sub. It will execute the sh file for each row of the parameter matrix as well as port the needed data into each simulation. 
+This will create a one csv file for each simulation which are filled with allele frequency data. This data should automatically be output by condor, and then all you need to do is tarball the results and move them back onto the local machine. 
+I'll go into details within the comments on each file
+
+Files Created:
+tarball containing the Cluster/ functions as well as all of the result csvs output by each slim simulation
+
+############
+## Step 3 ##
+############
+Files needed:
+Tarball from step 2
+sortedsnpdata.csv: Made during step 1
+clusteroutputparser.R: takes all of the output csvs from the cluster and organizes them based on fitness function used or alpha parameter used etc.
+parsedouttojaccard.R takes the organized output from clusteroutputparser.R and calculates the mean jaccard score between the 10 populations included in each simulation. Organizes these jaccard values into an output csv.
+
+Steps to take:
+First unpack the tarball from the cluster and move all the output csvs to their own folder titled SLiMouts/.
+Then run clusteroutputparser.R, it will organize this new file. 
+Then we will run parsedouttojaccard. It will loop through each of the simulations and calculate the mean jaccard score of the 10 replicate lines included in each simulation, then organize all of the mean jaccard scores into a dataframe. This dataframe is saved as sim.resuls.csv
+
+Files created:
+sim.results.csv: A dataframe containing the mean jaccard scores at generation 6 and 10 for every simulation performed in this analysis.
+
+sim.results.csv is loaded when we are creating figures.
