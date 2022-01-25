@@ -1,3 +1,4 @@
+// this function will call the results matrix that we have been building. give it column names and prints it to the console in csv format.
 function (void)MakeOutput(void) {
 	results = sim.getValue("results");
 	sampledloci = sim.getValue("sampledloci");
@@ -8,7 +9,12 @@ function (void)MakeOutput(void) {
 }
 
 ////////////////////////////
-
+// this function creates the empty matrix we will fill in with allele frequencies at generation 6 and 10. It will be of the format
+// Gen, Pop, LociX, LociY.......
+// 0	, 1  , 0.1	, 0.23 ..... 	
+// 0  , 2.......
+// .    .
+// .    .   
 function (void)InitializeFreqArray(void) {
 	results = array(rep(0.0, (3*npops)*(nloci + 2)),dim = c(3*npops, nloci + 2));
 	gencol = c(rep(0, npops), rep(6, npops), rep(10, npops));
@@ -19,7 +25,10 @@ function (void)InitializeFreqArray(void) {
 }
 
 ////////////////////////////
-
+// this function will fill in the results matrix we initialized in the function above during the appropriate generations.
+// within this function is the sampling we do to mimic how pool seq works.
+// first we sample 100 individuals from each population to make our "pool" then we sample from the 200 pooled
+// gametes according to each loci's empirical coverage data
 function (void)SaveVals(void) {
 	results = sim.getValue("results");
 	cov = sim.getValue("cov");
@@ -40,8 +49,11 @@ function (void)SaveVals(void) {
 }
 
 ////////////////////////////
-
+// this function reads in RecomMap.csv
+// then selects the row of the csv corresponding to the loci included in this simulation (simnum)
+// this row selection is not necessary in the analysis where we do not vary which loci are included
 function (numeric)LoadRecomMap(void) {
+// these lines are used for running the script locally in the gui
 //	lines = readFile("/Users/nathan/Documents/GitHub/EpistasisSim/nlocisnps/RecomMap.csv");
 	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/RecomMap.csv")
 	lines = readFile("./RecomMap.csv");
@@ -55,7 +67,10 @@ function (numeric)LoadRecomMap(void) {
 
 
 ////////////////////////////
-
+// this function goes loci by loci and assigns gametes to carry either allele based on that alleles empirical starting freq
+// the starting frequencies are altered in the analyses where we do that
+// this function also defines the "max polygenic score" for this simulation. Which is the phenotype of a hypothetical individual
+// who carried ALL beneficial alleles.
 function (void)SetUpStartingPops(void) {
 	T0 = sim.getValue("T0");
 	selcoef = sim.getValue("selcoef");
@@ -72,7 +87,7 @@ function (void)SetUpStartingPops(void) {
 
 
 ////////////////////////////
-
+// this function reads in all of the data needed from sortedsnpdata.csv
 function (void)ReadLog(void) {
 //	lines = readFile("/Users/nathan/Documents/GitHub/EpistasisSim/nlocisnps/sortedsnpdata.csv");
 	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/EmpT0snps/selected_snps.info.txt");
@@ -104,7 +119,8 @@ function (void)ReadLog(void) {
 }
 
 ////////////////////////////
-
+// here is where we calculate the fitness of each individual based on the beneficial alleles that they carry.
+// first we calculate the individuals phenotype between 0 and 1, then we plug it into the specified fitness function.
 function (void)GetFits(void) {
 	maxpolygenicscore = sim.getValue("maxpolygenicscore");
 	inds = sim.subpopulations.individuals;
@@ -135,7 +151,8 @@ function (void)GetFits(void) {
 	if(fitnessFunction == "stabilizing" | fitnessFunction == 5) {
 		inds.fitnessScaling = exp(-0.5 * (((polygenicscore - horshift) - mu)^2 / std ^ 2));
 	}
-	
+	// these are interesting for live plotting results in the gui but these if statements are not used in the version of the 
+	// script run on the cluster
 	if(sim.generation == 1) {
 		pgsarray = array(rep(0.0, 3 * npops * popsize), c(3, npops * popsize));
 		fitarray = array(rep(0.0, 3 * npops * popsize), c(3, npops * popsize));
@@ -170,7 +187,8 @@ function (void)GetFits(void) {
 }
 
 ////////////////////////////
-
+// this function reads in sampledloci.csv. Finds the correct row for the current simulation
+// and then prunes the data taken in in the ReadLog function above to only include the included loci
 function (void)Readsnps(void){
 //	lines = readFile("/Users/nathan/Documents/GitHub/EpistasisSim/nlocisnps/sampledloci.csv");
 	//	lines = readFile("/media/lee/HDD_Array/nwanderson/EpistasisSim/RecomMap.csv")
@@ -190,7 +208,7 @@ function (void)Readsnps(void){
 }
 
 ////////////////////////////
-
+// this function makes some cool liveplots in the gui that show what is happening. this function is not run on the cluster
 function (void)MakePlot(void) {
 	pgsarray = sim.getValue("pgsarray");
 	fitarray = sim.getValue('fitarray');
@@ -242,8 +260,10 @@ function (void)MakePlot(void) {
 	system(RSCRIPT, args=scriptPath);
 	deleteFile(scriptPath);
 }
-
+// here we are initializing the simulation
 initialize() {
+// we set the seed and when we are running in the gui we uncomment the parameter lines. These parameters are fed in through the command
+// line when you are running on the cluster
 	setSeed(seed);
 //	defineGlobal("npops",10);
 //	defineGlobal("nloci", 10);
@@ -267,8 +287,11 @@ initialize() {
 	
 	initializeGenomicElement(g1, 0, (nloci - 1));
 	
+	// we switch which of these two lines are commented vs uncommented for when we have a recombination map or are working with unlinked loci
 	initializeRecombinationRate(LoadRecomMap(), 1:(nloci-1));
 	//	initializeRecombinationRate(0.5);
+	
+	// this section needs to be uncommented for liveplotting
 	
 	//	initializing a path to R for running liveplotting	
 //	if (fileExists("/usr/bin/Rscript")){
@@ -282,7 +305,9 @@ initialize() {
 
 
 
-
+// here we are defining our fitness callback. SLiM defaults to the multiplicative fitness function
+// for positive or negative epistasis we tack on the exponential term to the end of the default fitness
+// for any of the AT models, we replace the default fitness with 1 and use only the 
 fitness(m1) {
 	if(fitnessFunction == "diminishingReturns" | fitnessFunction == "directional" | fitnessFunction == "stabilizing" |
 		fitnessFunction == 3 | fitnessFunction == 4 | fitnessFunction == 5) {
@@ -294,7 +319,7 @@ fitness(m1) {
 
 
 
-
+//creating our 10 replicate selection lines
 1 late() {
 	sim.addSubpop("p1", popsize);
 	sim.addSubpop("p2", popsize);
@@ -307,9 +332,12 @@ fitness(m1) {
 	sim.addSubpop("p9", popsize);
 	sim.addSubpop("p10", popsize);
 	
+	// reading in info
 	ReadLog();
 	Readsnps();
+	// initializing mutations at starting freqs
 	SetUpStartingPops();
+	// creating results matrix
 	InitializeFreqArray();
 	
 	// getting ready for liveplotting
@@ -319,24 +347,27 @@ fitness(m1) {
 }
 
 
-
+// caliing our fitness callback every generation
 1: late() {
 	GetFits();
 	//	MakePlot();
 }
 
 
-
+// saving starting values
 1 late() {
 	SaveVals();
 }
 
+// saving information at generation 6
 7 late() {
 	SaveVals();
 }
 
+// saving info at generation 10
 11 late() {
 	SaveVals();
 //	MakePlot();
+// end of simulation printing output to the console.
 	MakeOutput();
 }

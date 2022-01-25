@@ -41,9 +41,33 @@ New.slim: the slim simulation
 121.sub: the submit file for the cluster
 121.sh: shell script executed in the cluster
 
+Also needed are 3 empty directories titled "logs"," "outs" and "errs" that will be populated by logfiles and error messages if they exist.
+
 Steps to take:
 First copy and paste the needed files we created during step 1.
 Then all you really need to do is scp the whole folder into the cluster then run condor_submit 121.sub. It will execute the sh file for each row of the parameter matrix as well as port the needed data into each simulation. 
 This will create a one csv file for each simulation which are filled with allele frequency data. This data should automatically be output by condor, and then all you need to do is tarball the results and move them back onto the local machine. 
 I'll go into details within the comments on each file
+
+Files Created:
+tarball containing the Cluster/ functions as well as all of the result csvs output by each slim simulation
+
+############
+## Step 3 ##
+############
+Files needed:
+Tarball from step 2
+sortedsnpdata.csv: Made during step 1
+clusteroutputparser.R: takes all of the output csvs from the cluster and organizes them based on fitness function used or alpha parameter used etc.
+parsedouttojaccard.R takes the organized output from clusteroutputparser.R and calculates the mean jaccard score between the 10 populations included in each simulation. Organizes these jaccard values into an output csv.
+
+Steps to take:
+First unpack the tarball from the cluster and move all the output csvs to their own folder titled SLiMouts/.
+Then run clusteroutputparser.R, it will organize this new file. 
+Then we will run parsedouttojaccard. It will loop through each of the simulations and calculate the mean jaccard score of the 10 replicate lines included in each simulation, then organize all of the mean jaccard scores into a dataframe. This dataframe is saved as sim.resuls.csv
+
+Files created:
+sim.results.csv: A dataframe containing the mean jaccard scores at generation 6 and 10 for every simulation performed in this analysis.
+
+sim.results.csv is loaded when we are creating figures.
 

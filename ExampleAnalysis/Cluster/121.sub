@@ -1,17 +1,27 @@
+# Specify the HTCondor Universe (vanilla is the default)
 universe = vanilla
+# specify the location for logfiles. Job number will be insterted for cluster
 log = logs/121_$(Cluster).log
 
+# specify the shell script to be executed in each job.
 executable = 121.sh
+# specify the arguments being fed in through params.txt. The order here matches the order of the columns, and the order the corresponding numbers appear in the shell script
 arguments = $(seed) $(fitnessFunction) $(a) $(s) $(r) $(b) $(mu) $(std) $(nloci) $(simnum)
+# specify location of output files
 output = outs/121_$(Cluster)_$(Process).out
+# specify location of error messages should any arise. If things run well this folder will remain empty
 error = errs/121_$(Cluster)_$(Process).err
 
+# we want to input all our csv files we created
 should_transfer_files = YES
+# transfer output automatically when the job is done
 when_to_transfer_output = ON_EXIT
+# specify the input files that we want to go into each job. 
 transfer_input_files = slimbuild.tar.gz, New.slim, sortedsnpdata.csv, sampledloci.csv, RecomMap.csv
 
 request_cpus = 1
 request_memory = 2GB
 request_disk = 2GB
 
+# queue for each row of params.txt 
 queue seed,fitnessFunction,a,s,r,b,mu,std,nloci,simnum from params.txt
